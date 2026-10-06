@@ -90,7 +90,7 @@ export default function CrisisIntelligencePage() {
     if (res.success) {
       setStatusMessage(`Incident updated to ${newStatus}`);
       setTimeout(() => setStatusMessage(null), 3000);
-    }
+    } else setStatusMessage(res.error || "Incident status update unavailable.");
   };
 
   const criticalCount = incidents.filter((i) => i.severity === "CRITICAL").length;

@@ -36,11 +36,28 @@ export async function POST(req: NextRequest) {
     const webSearchQueries = groundingMetadata?.webSearchQueries || [];
     const searchEntryPoint = groundingMetadata?.searchEntryPoint?.renderedContent || null;
 
+    const generatedAt = new Date().toISOString();
     return NextResponse.json({
       text,
       groundingChunks,
       webSearchQueries,
       searchEntryPoint,
+      classification: "ai_generated",
+      provenance: {
+        kind: "ai_generated",
+        sourceId: "google-search-grounding",
+        sourceName: "Google Search Grounding with Gemini",
+        observedAt: generatedAt,
+        recordedAt: generatedAt,
+        processingVersion: "gemini-3.8-flash",
+        confidence: null,
+        confidenceStatus: "not provided by the model",
+      },
+      limitations: [
+        "AI-generated summaries can be incomplete or inaccurate.",
+        "Citations require human review and do not independently verify operational facts.",
+        "Not suitable for dispatch or evacuation decisions.",
+      ],
     });
   } catch (error: any) {
     console.error("Search grounding API error:", error);

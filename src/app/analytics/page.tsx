@@ -6,17 +6,35 @@ import { Activity, TrendingUp, ShieldAlert, BarChart3, PieChart, Users, HeartPul
 import { TacticalBadge } from "@/components/ui/TacticalBadge";
 import { riskService } from "@/lib/services/riskService";
 import { CarryingCapacityMetrics, HazardRedZone, RelocationIntelligence } from "@/lib/types/isie";
+import { useAuth } from "@/lib/auth/AuthContext";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 export default function AnalyticsPage() {
+  const { isDemoMode } = useAuth();
   const [redZones, setRedZones] = useState<HazardRedZone[]>([]);
   const [capacity, setCapacity] = useState<CarryingCapacityMetrics | null>(null);
   const [relocations, setRelocations] = useState<RelocationIntelligence[]>([]);
 
   useEffect(() => {
-    riskService.getHazardRedZones().then(setRedZones);
-    riskService.getCarryingCapacityAssessment().then(setCapacity);
-    riskService.getRelocationPriorities().then(setRelocations);
-  }, []);
+    riskService.getHazardRedZones(undefined, isDemoMode).then(setRedZones);
+    riskService.getCarryingCapacityAssessment(undefined, isDemoMode).then(setCapacity);
+    riskService.getRelocationPriorities(undefined, isDemoMode).then(setRelocations);
+  }, [isDemoMode]);
+
+  if (!isDemoMode) {
+    return (
+      <AppShell pageTitle="Analytics // Data Unavailable">
+        <div className="flex-1 flex flex-col p-4 md:p-6 gap-6 max-w-7xl mx-auto w-full">
+          <EmptyState
+            icon="database"
+            title="No Verified Analytics Available"
+            description="Capacity, infrastructure, water, and relocation analytics are withheld until source data with verification provenance and a validated analysis backend are connected. No operational estimates are being inferred."
+            statusText="INSUFFICIENT VERIFIED DATA"
+          />
+        </div>
+      </AppShell>
+    );
+  }
 
   return (
     <AppShell pageTitle="Analytics // Carrying Capacity Stress & Relocation Priority Scoring">
@@ -37,7 +55,7 @@ export default function AnalyticsPage() {
 
           <div className="flex items-center gap-2">
             <TacticalBadge variant="cyan" size="sm">
-              ANALYTIC RUN: LIVE SYNTHETIC
+              DEMO SIMULATION // SYNTHETIC FIXTURES ONLY
             </TacticalBadge>
           </div>
         </div>

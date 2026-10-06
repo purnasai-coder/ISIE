@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Truck, ShieldCheck, Users, HeartPulse, Droplets, Building, Search, Filter } from "lucide-react";
 import { TacticalBadge } from "@/components/ui/TacticalBadge";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { resourceService } from "@/lib/services/resourceService";
 import { ResponseResource } from "@/data/demo/resources";
 
@@ -36,13 +37,13 @@ export default function ResourcesPage() {
               </h1>
             </div>
             <p className="text-xs text-isie-text-secondary">
-              Deployment tracking of specialized search & rescue battalions, designated safe havens, and medical corridors.
+              Resource availability requires a configured, verified source feed; no inventory is currently connected.
             </p>
           </div>
 
           <div className="flex items-center gap-2">
             <TacticalBadge variant="safe" size="sm">
-              ASSETS READY: {resources.length}
+              VERIFIED RESOURCE RECORDS: {resources.length}
             </TacticalBadge>
           </div>
         </div>
@@ -65,7 +66,14 @@ export default function ResourcesPage() {
         </div>
 
         {/* Resource Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 min-w-0">
+        {resources.length === 0 ? (
+          <EmptyState
+            icon="database"
+            title="No Verified Resource Inventory"
+            description="Shelter, responder, medical, and logistics availability is unavailable until an authorized source is integrated. No operational resource values are being shown."
+            statusText="DATA UNAVAILABLE"
+          />
+        ) : <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 min-w-0">
           {resources.map((res) => (
             <div
               key={res.id}
@@ -127,7 +135,7 @@ export default function ResourcesPage() {
               </div>
             </div>
           ))}
-        </div>
+        </div>}
       </div>
     </AppShell>
   );

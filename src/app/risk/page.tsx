@@ -39,10 +39,10 @@ export default function RiskImpactAnalysisPage() {
   const [selectedDomain, setSelectedDomain] = useState<"ALL" | "CAPACITY" | "RELOCATION">("ALL");
 
   useEffect(() => {
-    riskService.getHazardRedZones().then(setRedZones);
-    riskService.getCarryingCapacityAssessment().then(setCapacity);
-    riskService.getRelocationPriorities().then(setRelocations);
-  }, []);
+    riskService.getHazardRedZones(undefined, isDemoMode).then(setRedZones);
+    riskService.getCarryingCapacityAssessment(undefined, isDemoMode).then(setCapacity);
+    riskService.getRelocationPriorities(undefined, isDemoMode).then(setRelocations);
+  }, [isDemoMode]);
 
   useEffect(() => {
     const unsubscribe = incidentService.subscribeIncidents(isDemoMode, setIncidents);
@@ -64,6 +64,21 @@ export default function RiskImpactAnalysisPage() {
     ? Math.max(...relocations.map((r) => r.relocationPriorityScore))
     : 94;
 
+  if (!isDemoMode) {
+    return (
+      <AppShell pageTitle="Risk & Impact Analysis // Data Unavailable">
+        <div className="flex-1 flex flex-col p-4 md:p-6 gap-6 max-w-7xl mx-auto w-full">
+          <EmptyState
+            icon="database"
+            title="No Verified Risk Assessment Available"
+            description="Risk, capacity, and relocation figures are withheld until fresh source measurements, verification provenance, and an integrated validated analysis backend are available. Missing: verified hazard observations, population exposure, shelter capacity, and current route status."
+            statusText="INSUFFICIENT VERIFIED DATA"
+          />
+        </div>
+      </AppShell>
+    );
+  }
+
   return (
     <AppShell pageTitle="Risk & Impact Analysis // Carrying Capacity & Vulnerability Assessment">
       <div className="flex-1 flex flex-col p-4 md:p-6 gap-6 max-w-7xl mx-auto w-full select-none">
@@ -83,7 +98,7 @@ export default function RiskImpactAnalysisPage() {
 
           <div className="flex items-center gap-2">
             <TacticalBadge variant="cyan" size="sm">
-              ENGINE: PROBABILISTIC // LIVE
+              DEMO SIMULATION // NOT OPERATIONAL
             </TacticalBadge>
             <TacticalBadge variant="orange" size="sm">
               {redZones.length} HAZARD SECTORS

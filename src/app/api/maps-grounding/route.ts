@@ -24,6 +24,19 @@ export async function POST(req: NextRequest) {
     };
 
     if (typeof latitude === "number" && typeof longitude === "number") {
+      if (
+        !Number.isFinite(latitude) ||
+        !Number.isFinite(longitude) ||
+        latitude < -90 ||
+        latitude > 90 ||
+        longitude < -180 ||
+        longitude > 180
+      ) {
+        return NextResponse.json(
+          { error: "Coordinates are outside valid latitude/longitude ranges." },
+          { status: 400 }
+        );
+      }
       config.toolConfig = {
         retrievalConfig: {
           latLng: {
@@ -44,9 +57,26 @@ export async function POST(req: NextRequest) {
     const groundingChunks =
       response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
 
+    const generatedAt = new Date().toISOString();
     return NextResponse.json({
       text,
       groundingChunks,
+      classification: "ai_generated",
+      provenance: {
+        kind: "ai_generated",
+        sourceId: "google-maps-grounding",
+        sourceName: "Google Maps Grounding with Gemini",
+        observedAt: generatedAt,
+        recordedAt: generatedAt,
+        processingVersion: "gemini-3.8-flash",
+        confidence: null,
+        confidenceStatus: "not provided by the model",
+      },
+      limitations: [
+        "AI-generated summaries can be incomplete or inaccurate.",
+        "Place citations do not establish current operational status or capacity.",
+        "Not suitable for dispatch or evacuation decisions.",
+      ],
     });
   } catch (error: any) {
     console.error("Maps grounding API error:", error);

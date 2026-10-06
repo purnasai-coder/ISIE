@@ -9,6 +9,7 @@ import { DEMO_EVIDENCE } from "@/data/demo/intelligence";
 import { incidentService } from "./incidentService";
 import { collection, getDocs, query, doc, getDoc } from "firebase/firestore";
 import { db, handleFirestoreError, OperationType } from "@/lib/firebase/client";
+import { hasFreshVerifiedProvenance } from "@/lib/utils/dataQuality";
 
 export interface IIntelligenceService {
   getActiveEvents(scopeOrDemo?: string | boolean, isDemoMode?: boolean): Promise<IntelligenceEvent[]>;
@@ -24,20 +25,20 @@ export class IntelligenceService implements IIntelligenceService {
    * Seamlessly routes to Firestore in Real User Mode or DEMO_INCIDENTS in Demo Mode.
    */
   async getActiveEvents(scopeOrDemo?: string | boolean, isDemoMode?: boolean): Promise<IntelligenceEvent[]> {
-    const isDemo = typeof scopeOrDemo === "boolean" ? scopeOrDemo : (isDemoMode ?? true);
+    const isDemo = typeof scopeOrDemo === "boolean" ? scopeOrDemo : (isDemoMode ?? false);
     return incidentService.getIncidents(isDemo);
   }
 
-  async getEventById(id: string, isDemoMode: boolean = true): Promise<IntelligenceEvent | null> {
+  async getEventById(id: string, isDemoMode: boolean = false): Promise<IntelligenceEvent | null> {
     return incidentService.getIncidentById(id, isDemoMode);
   }
 
-  async getEvidenceForEvent(eventId: string, isDemoMode: boolean = true): Promise<EvidenceItem[]> {
+  async getEvidenceForEvent(eventId: string, isDemoMode: boolean = false): Promise<EvidenceItem[]> {
     const all = await this.getAllAuthoritativeEvidence(isDemoMode);
     return all.filter((e) => e.relatedEventIds.includes(eventId));
   }
 
-  async getAllAuthoritativeEvidence(isDemoMode: boolean = true): Promise<EvidenceItem[]> {
+  async getAllAuthoritativeEvidence(isDemoMode: boolean = false): Promise<EvidenceItem[]> {
     if (isDemoMode) {
       return [...DEMO_EVIDENCE];
     }
@@ -48,10 +49,9 @@ export class IntelligenceService implements IIntelligenceService {
       if (snapshot.empty) {
         return [];
       }
-      return snapshot.docs.map((d) => ({
-        id: d.id,
-        ...(d.data() as Omit<EvidenceItem, "id">),
-      }));
+      return snapshot.docs
+        .filter((d) => hasFreshVerifiedProvenance(d.data()))
+        .map((d) => ({ id: d.id, ...(d.data() as Omit<EvidenceItem, "id">) }));
     } catch (err) {
       handleFirestoreError(err, OperationType.LIST, "evidence");
       return [];
@@ -59,10 +59,7 @@ export class IntelligenceService implements IIntelligenceService {
   }
 
   async verifyEvidence(evidenceId: string): Promise<{ success: boolean; status: VerificationStatus }> {
-    return {
-      success: true,
-      status: "VERIFIED_BY_AUTHORITY",
-    };
+    return { success: false, status: "UNVERIFIED" };
   }
 }
 

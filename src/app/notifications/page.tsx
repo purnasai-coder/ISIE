@@ -14,23 +14,35 @@ export default function NotificationsPage() {
   const { isDemoMode } = useAuth();
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [filter, setFilter] = useState("ALL");
+  const [mutationNotice, setMutationNotice] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
-    notificationService.getNotifications(isDemoMode).then(setNotifications);
+    setLoadError(null);
+    notificationService.getNotifications(isDemoMode)
+      .then(setNotifications)
+      .catch(() => {
+        setNotifications([]);
+        setLoadError("Notification records could not be loaded. This is not an empty verified-notification assessment.");
+      });
   }, [isDemoMode]);
 
   const handleMarkAllRead = async () => {
-    await Promise.all(notifications.map((n) => notificationService.markAsRead(n.id)));
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    const results = await Promise.all(notifications.map((n) => notificationService.markAsRead(n.id, isDemoMode)));
+    if (results.every(Boolean)) setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    else setMutationNotice("Notification updates are disabled until the audited backend is configured.");
   };
 
   const handleClear = async () => {
-    await notificationService.clearAll();
-    setNotifications([]);
+    if (await notificationService.clearAll(isDemoMode)) setNotifications([]);
+    else setMutationNotice("Notification updates are disabled until the audited backend is configured.");
   };
 
   const handleMarkSingle = async (id: string) => {
-    await notificationService.markAsRead(id);
+    if (!(await notificationService.markAsRead(id, isDemoMode))) {
+      setMutationNotice("Notification updates are disabled until the audited backend is configured.");
+      return;
+    }
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, read: true } : n))
     );
@@ -57,9 +69,20 @@ export default function NotificationsPage() {
               </h1>
             </div>
             <p className="text-xs text-isie-text-secondary">
-              Ingestion telemetry logs, cluster node status updates, and system advisory notices.
+              No operational telemetry or notification provider is configured.
             </p>
           </div>
+
+          {mutationNotice && (
+            <div role="status" className="border border-amber-500/40 bg-amber-950/30 p-3 font-mono text-xs text-amber-200">
+              {mutationNotice}
+            </div>
+          )}
+          {loadError && (
+            <div role="alert" className="border border-red-500/40 bg-red-950/30 p-3 font-mono text-xs text-red-200">
+              {loadError}
+            </div>
+          )}
 
           <div className="flex items-center gap-2">
             <TacticalBadge variant="cyan" size="sm">
@@ -108,7 +131,11 @@ export default function NotificationsPage() {
 
         {/* Notification List */}
         <div className="space-y-3">
-          {filtered.length === 0 ? (
+          {loadError ? (
+            <div role="alert" className="p-8 bg-isie-panel border border-red-500/30 rounded-sm text-center font-mono text-xs text-red-200">
+              NOTIFICATION DATA UNAVAILABLE // {loadError}
+            </div>
+          ) : filtered.length === 0 ? (
             <div className="p-8 bg-isie-panel border border-white/10 rounded-sm text-center font-mono text-xs text-isie-text-muted">
               NO NOTIFICATIONS IN SELECTED CATEGORY
             </div>

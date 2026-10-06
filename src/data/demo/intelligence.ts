@@ -8,7 +8,7 @@ export const DEMO_EVIDENCE: EvidenceItem[] = [
     sourceType: "SATELLITE_SAR",
     timestamp: "2026-10-01 01:20 UTC",
     coordinates: { lat: 30.5541, lng: 79.5663 },
-    verificationStatus: "VERIFIED_BY_AUTHORITY",
+    verificationStatus: "UNVERIFIED",
     confidenceScore: 0.96,
     authoritativeUrl: "https://dataspace.copernicus.eu/",
     technicalMetadata: {
@@ -29,7 +29,7 @@ export const DEMO_EVIDENCE: EvidenceItem[] = [
     sourceType: "RIVER_GAUGE",
     timestamp: "2026-10-01 02:05 UTC",
     coordinates: { lat: 30.559, lng: 79.561 },
-    verificationStatus: "VERIFIED_BY_AUTHORITY",
+    verificationStatus: "UNVERIFIED",
     confidenceScore: 0.99,
     authoritativeUrl: "https://cwc.gov.in/",
     technicalMetadata: {
@@ -50,7 +50,7 @@ export const DEMO_EVIDENCE: EvidenceItem[] = [
     sourceType: "RADAR_WEATHER",
     timestamp: "2026-10-01 00:50 UTC",
     coordinates: { lat: 30.53, lng: 79.58 },
-    verificationStatus: "VERIFIED_BY_AUTHORITY",
+    verificationStatus: "UNVERIFIED",
     confidenceScore: 0.92,
     authoritativeUrl: "https://mausam.imd.gov.in/",
     technicalMetadata: {
@@ -71,7 +71,7 @@ export const DEMO_EVIDENCE: EvidenceItem[] = [
     sourceType: "SATELLITE_OPTICAL",
     timestamp: "2026-10-01 00:15 UTC",
     coordinates: { lat: 26.685, lng: 93.351 },
-    verificationStatus: "VERIFIED_BY_AUTHORITY",
+    verificationStatus: "UNVERIFIED",
     confidenceScore: 0.94,
     authoritativeUrl: "https://www.isro.gov.in/DBEM.html",
     technicalMetadata: {

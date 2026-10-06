@@ -25,7 +25,6 @@ import {
   Info,
 } from "lucide-react";
 import { TacticalBadge } from "../ui/TacticalBadge";
-import { DEMO_INCIDENTS } from "@/data/demo/incidents";
 import { IntelligenceEvent } from "@/lib/types/isie";
 import {
   INDIAN_STATES,
@@ -76,7 +75,7 @@ export const AdvancedMap: React.FC<AdvancedMapProps> = ({
   activeLayers: propActiveLayers,
   layerOpacities: propLayerOpacities,
 }) => {
-  const activeIncidents = incidents !== undefined ? incidents : DEMO_INCIDENTS;
+  const activeIncidents = incidents ?? [];
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const layersGroupRef = useRef<Record<string, any>>({});
@@ -1099,6 +1098,9 @@ export const AdvancedMap: React.FC<AdvancedMapProps> = ({
             SWITCH TO VECTOR MAP
           </button>
         </div>
+        <div className="absolute bottom-3.5 right-3.5 z-20 rounded-xs border border-amber-400/70 bg-black/90 px-2.5 py-1 font-mono text-[10px] font-bold text-amber-200">
+          STATIC ILLUSTRATION LAYERS // NOT LIVE OR VERIFIED
+        </div>
       </div>
     );
   }
@@ -1118,6 +1120,9 @@ export const AdvancedMap: React.FC<AdvancedMapProps> = ({
             : "map-style-natural"
         }`}
       />
+      <div className="absolute bottom-3.5 left-3.5 z-20 rounded-xs border border-amber-400/70 bg-black/90 px-2.5 py-1 font-mono text-[10px] font-bold text-amber-200">
+        STATIC ILLUSTRATION LAYERS // NOT LIVE OR VERIFIED
+      </div>
 
       {/* Top Header Tactical HUD Bar */}
       <div className="absolute top-2.5 left-2.5 right-2.5 z-10 flex flex-wrap items-center justify-between gap-2 pointer-events-none">

@@ -15,7 +15,7 @@ export const DEMO_INCIDENTS: IntelligenceEvent[] = [
     confidenceScore: 0.94,
     sourceCount: 5,
     sourceAgencies: ["ISRO NDEM", "CWC Hydrology", "Copernicus Sentinel-1", "IMD Doppler"],
-    verificationStatus: "VERIFIED_BY_AUTHORITY",
+    verificationStatus: "UNVERIFIED",
     summary:
       "Rapid glacial lake expansion and slope mass detachment triggered 4.2m instantaneous river surge at Joshimath gauge. Arterial highway NH-58 breached at two points.",
     affectedHabitationsCount: 14,
@@ -40,7 +40,7 @@ export const DEMO_INCIDENTS: IntelligenceEvent[] = [
     confidenceScore: 0.91,
     sourceCount: 4,
     sourceAgencies: ["CWC Hydrology", "IMD Mausam", "Sentinel-2 Optical"],
-    verificationStatus: "VERIFIED_BY_AUTHORITY",
+    verificationStatus: "UNVERIFIED",
     summary:
       "Water levels 1.4m above danger mark. Sub-embankment breached along southern sector, inundating low-lying habitations.",
     affectedHabitationsCount: 38,
@@ -65,7 +65,7 @@ export const DEMO_INCIDENTS: IntelligenceEvent[] = [
     confidenceScore: 0.96,
     sourceCount: 6,
     sourceAgencies: ["IMD Cyclone Warning", "ISRO Oceansat", "NASA FIRMS", "Copernicus"],
-    verificationStatus: "VERIFIED_BY_AUTHORITY",
+    verificationStatus: "UNVERIFIED",
     summary:
       "Category 4 equivalent storm surge forecast of 3.8m above astronomical tide. Coastal shelter capacity expected to saturate within 18 hours.",
     affectedHabitationsCount: 62,
@@ -90,7 +90,7 @@ export const DEMO_INCIDENTS: IntelligenceEvent[] = [
     confidenceScore: 0.88,
     sourceCount: 3,
     sourceAgencies: ["CWC Hydrology", "State Water Resources"],
-    verificationStatus: "VERIFIED_BY_AUTHORITY",
+    verificationStatus: "UNVERIFIED",
     summary:
       "Controlled discharge increased to 85,000 cumecs following heavy catchment runoff. Downstream riverbanks alerted.",
     affectedHabitationsCount: 8,

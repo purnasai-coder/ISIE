@@ -16,24 +16,40 @@ export default function AlertCenterPage() {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [filterSeverity, setFilterSeverity] = useState<string>("ALL");
   const [selectedAlert, setSelectedAlert] = useState<Alert | null>(null);
+  const [mutationNotice, setMutationNotice] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
-    alertService.getActiveAlerts(isDemoMode).then((data) => {
-      setAlerts(data);
-      if (data.length > 0) setSelectedAlert(data[0]);
-      else setSelectedAlert(null);
-    });
+    setLoadError(null);
+    alertService.getActiveAlerts(isDemoMode)
+      .then((data) => {
+        setAlerts(data);
+        setSelectedAlert(data[0] || null);
+      })
+      .catch(() => {
+        setAlerts([]);
+        setSelectedAlert(null);
+        setLoadError("Alert records could not be loaded. This is not an empty verified-alert assessment.");
+      });
   }, [isDemoMode]);
 
   const handleAcknowledge = async (id: string) => {
-    await alertService.acknowledgeAlert(id);
+    const success = await alertService.acknowledgeAlert(id, isDemoMode);
+    if (!success) {
+      setMutationNotice("Alert updates are disabled until the audited backend is configured.");
+      return;
+    }
     setAlerts((prev) =>
       prev.map((a) => (a.id === id ? { ...a, status: "ACKNOWLEDGED" as const } : a))
     );
   };
 
   const handleDismiss = async (id: string) => {
-    await alertService.dismissAlert(id);
+    const success = await alertService.dismissAlert(id, isDemoMode);
+    if (!success) {
+      setMutationNotice("Alert updates are disabled until the audited backend is configured.");
+      return;
+    }
     setAlerts((prev) => prev.filter((a) => a.id !== id));
     if (selectedAlert?.id === id) {
       setSelectedAlert(alerts.find((a) => a.id !== id) || null);
@@ -57,7 +73,7 @@ export default function AlertCenterPage() {
               </h1>
             </div>
             <p className="text-xs text-isie-text-secondary">
-              Automated threshold alerts, carrying capacity breaches, road cutoffs, and multi-agency notifications.
+              No operational alert generation or dispatch is configured. Records appear only when fresh, verified-source checks pass.
             </p>
           </div>
 
@@ -92,8 +108,13 @@ export default function AlertCenterPage() {
               size="sm"
               icon={<CheckCircle2 className="w-3.5 h-3.5" />}
               onClick={() => {
-                alerts.forEach((a) => alertService.acknowledgeAlert(a.id));
-                setAlerts((prev) => prev.map((a) => ({ ...a, status: "ACKNOWLEDGED" as const })));
+                Promise.all(alerts.map((a) => alertService.acknowledgeAlert(a.id, isDemoMode))).then((results) => {
+                  if (results.every(Boolean)) {
+                    setAlerts((prev) => prev.map((a) => ({ ...a, status: "ACKNOWLEDGED" as const })));
+                  } else {
+                    setMutationNotice("Alert updates are disabled until the audited backend is configured.");
+                  }
+                });
               }}
             >
               ACKNOWLEDGE ALL
@@ -101,11 +122,24 @@ export default function AlertCenterPage() {
           </div>
         </div>
 
+        {mutationNotice && (
+          <div role="status" className="border border-amber-500/40 bg-amber-950/30 p-3 font-mono text-xs text-amber-200">
+            {mutationNotice}
+          </div>
+        )}
+        {loadError && (
+          <div role="alert" className="border border-red-500/40 bg-red-950/30 p-3 font-mono text-xs text-red-200">
+            {loadError}
+          </div>
+        )}
+
         {/* Main Grid: Alert List & Detail Action Console */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 min-w-0">
           {/* Alert Queue */}
           <div className="lg:col-span-6 min-w-0 space-y-3 max-h-[640px] overflow-y-auto pr-1 scrollbar-thin">
-            {filteredAlerts.length === 0 ? (
+            {loadError ? (
+              <EmptyState icon="alert" title="Alert Data Unavailable" description={loadError} statusText="LOAD ERROR" />
+            ) : filteredAlerts.length === 0 ? (
               <EmptyState
                 icon="alert"
                 title="No Active Alerts"

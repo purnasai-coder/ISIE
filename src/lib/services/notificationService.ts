@@ -5,8 +5,9 @@
 
 import { NotificationItem } from "../types/isie";
 import { DEMO_NOTIFICATIONS } from "@/data/demo/notifications";
-import { collection, doc, getDocs, updateDoc, query } from "firebase/firestore";
+import { collection, getDocs, query } from "firebase/firestore";
 import { db, auth, handleFirestoreError, OperationType } from "@/lib/firebase/client";
+import { hasFreshVerifiedProvenance } from "@/lib/utils/dataQuality";
 
 export interface INotificationService {
   getNotifications(isDemoMode?: boolean): Promise<NotificationItem[]>;
@@ -17,10 +18,11 @@ export interface INotificationService {
 export class NotificationService implements INotificationService {
   private demoNotifications: NotificationItem[] = [...DEMO_NOTIFICATIONS];
 
-  async getNotifications(isDemoMode: boolean = true): Promise<NotificationItem[]> {
-    if (isDemoMode || !auth.currentUser) {
+  async getNotifications(isDemoMode: boolean = false): Promise<NotificationItem[]> {
+    if (isDemoMode) {
       return [...this.demoNotifications];
     }
+    if (!auth.currentUser) return [];
 
     try {
       const col = collection(db, "notifications");
@@ -28,35 +30,29 @@ export class NotificationService implements INotificationService {
       if (snapshot.empty) {
         return [];
       }
-      return snapshot.docs.map((d) => ({
-        id: d.id,
-        ...(d.data() as Omit<NotificationItem, "id">),
-      }));
+      return snapshot.docs
+        .filter((d) => hasFreshVerifiedProvenance(d.data()))
+        .map((d) => ({ id: d.id, ...(d.data() as Omit<NotificationItem, "id">) }));
     } catch (err) {
       handleFirestoreError(err, OperationType.LIST, "notifications");
-      return [];
+      throw err;
     }
   }
 
-  async markAsRead(notificationId: string, isDemoMode: boolean = true): Promise<boolean> {
+  async markAsRead(notificationId: string, isDemoMode: boolean = false): Promise<boolean> {
     if (isDemoMode) {
       this.demoNotifications = this.demoNotifications.map((n) =>
         n.id === notificationId ? { ...n, read: true } : n
       );
       return true;
     }
+    if (!auth.currentUser) return false;
 
-    try {
-      const docRef = doc(db, "notifications", notificationId);
-      await updateDoc(docRef, { read: true });
-      return true;
-    } catch (err) {
-      handleFirestoreError(err, OperationType.UPDATE, `notifications/${notificationId}`);
-      return false;
-    }
+    void notificationId;
+    return false;
   }
 
-  async clearAll(isDemoMode: boolean = true): Promise<boolean> {
+  async clearAll(isDemoMode: boolean = false): Promise<boolean> {
     if (isDemoMode) {
       this.demoNotifications = [];
       return true;

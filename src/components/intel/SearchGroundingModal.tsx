@@ -163,7 +163,7 @@ export const SearchGroundingModal: React.FC<SearchGroundingModalProps> = ({
           <div>
             <div className="text-[10px] font-mono text-isie-text-dim uppercase tracking-wider mb-1.5 flex items-center gap-1">
               <TrendingUp className="w-3 h-3 text-amber-400" />
-              <span>Real-Time Situational Search Presets:</span>
+              <span>Search presets (AI-generated results require verification):</span>
             </div>
             <div className="flex flex-wrap gap-1.5">
               {PRESET_QUERIES.map((p, idx) => (
@@ -200,7 +200,7 @@ export const SearchGroundingModal: React.FC<SearchGroundingModalProps> = ({
 
             <div className="flex items-center justify-between pt-1">
               <span className="text-[10px] font-mono text-slate-400">
-                Grounding with Google Search ensures zero hallucination for current events.
+                AI-generated summaries may be inaccurate; verify cited sources before any operational use.
               </span>
               <button
                 type="submit"
@@ -238,7 +238,7 @@ export const SearchGroundingModal: React.FC<SearchGroundingModalProps> = ({
                 <div className="p-2.5 bg-amber-950/20 border border-amber-500/30 rounded-xs font-mono text-xs">
                   <div className="text-[10px] text-amber-300 uppercase tracking-wider font-semibold mb-1 flex items-center gap-1">
                     <Globe className="w-3 h-3 text-amber-400" />
-                    <span>Google Search Grounding Queries Executed:</span>
+                    <span>AI-GENERATED SUMMARY // SEARCH CITATIONS REQUIRE HUMAN REVIEW:</span>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {webSearchQueries.map((sq, i) => (

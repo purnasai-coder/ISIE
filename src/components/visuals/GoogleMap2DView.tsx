@@ -24,7 +24,6 @@ import {
 } from "lucide-react";
 import { TacticalBadge } from "../ui/TacticalBadge";
 import { IntelligenceEvent } from "@/lib/types/isie";
-import { DEMO_INCIDENTS } from "@/data/demo/incidents";
 import {
   loadGoogleMaps,
   getGoogleMapsApiKey,
@@ -121,7 +120,7 @@ export const GoogleMap2DView: React.FC<GoogleMap2DViewProps> = ({
   activeLayers: propActiveLayers,
   layerOpacities: propLayerOpacities,
 }) => {
-  const activeIncidents = incidents !== undefined ? incidents : DEMO_INCIDENTS;
+  const activeIncidents = incidents ?? [];
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
   const markersRef = useRef<Array<any>>([]);
@@ -375,33 +374,6 @@ export const GoogleMap2DView: React.FC<GoogleMap2DViewProps> = ({
           fillColor,
           fillOpacity: 0.22,
           map,
-        });
-
-        polygon.addListener("click", () => {
-          setActiveIncident({
-            id: zone.id,
-            eventCode: zone.classification === "RED_ZONE" ? "HAZ-RED" : "HAZ-WARN",
-            title: zone.name,
-            summary: zone.description,
-            severity: isRed ? "CRITICAL" : "HIGH",
-            status: "ACTIVE",
-            timestamp: "CURRENT OPERATIONAL",
-            locationName: zone.name,
-            region: "India Theater Hazard Perimeter",
-            coordinates: { lat: zone.center[0], lng: zone.center[1] },
-            confidenceScore: 0.95,
-            sourceCount: 4,
-            sourceAgencies: ["ISIE Geospatial Engine"],
-            verificationStatus: "VERIFIED_BY_AUTHORITY",
-            affectedHabitationsCount: isRed ? 24 : 12,
-            populationAtRisk: zone.populationExposed,
-            hazardZoneLevel: zone.classification,
-            carryingCapacityStatus: isRed ? "CRITICAL" : "WARNING",
-            relocationScore: isRed ? 92 : 75,
-            escalationRisk: isRed ? "EXTREME" : "ELEVATED",
-            evidenceIds: ["SAT-RADAR-01", "ISIE-GEO-PERIMETER"],
-            category: "HYDROMETEOROLOGICAL",
-          });
         });
 
         polygonsRef.current.push(polygon);

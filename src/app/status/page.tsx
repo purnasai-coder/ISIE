@@ -9,37 +9,37 @@ export default function SystemStatusPage() {
   const nodes = [
     {
       name: "Spatial GIS Projection Core",
-      protocol: "WGS-84 / WebGL",
-      status: "ONLINE",
-      detail: "Three.js & 2D Vector canvas engines operational",
-      variant: "safe" as const,
+      protocol: "WebGL presentation",
+      status: "PRESENTATION_ONLY",
+      detail: "Static map illustration; no verified operational spatial feed is connected.",
+      variant: "muted" as const,
     },
     {
       name: "Telemetry Ingestion Gateway",
-      protocol: "HTTPS / REST / WMS",
-      status: "STANDBY_UNCONNECTED",
-      detail: "No active sensor upstream connected (Frontend Preview Mode)",
-      variant: "cyan" as const,
+      protocol: "Not configured",
+      status: "UNAVAILABLE",
+      detail: "No sensor or provider adapter is configured.",
+      variant: "warning" as const,
     },
     {
       name: "AI Carrying Capacity Estimator",
-      protocol: "Inference Endpoint",
-      status: "UNCONNECTED",
-      detail: "Awaiting backend ML model cluster deployment",
+      protocol: "Prototype arithmetic",
+      status: "NOT OPERATIONAL",
+      detail: "Prototype analysis only; no validated model or live input integration is configured.",
       variant: "warning" as const,
     },
     {
       name: "Stochastic What-If Simulation Engine",
-      protocol: "Compute Worker",
-      status: "UNCONNECTED",
-      detail: "Awaiting simulation engine backend integration",
+      protocol: "Python prototype",
+      status: "NOT CONNECTED",
+      detail: "Simulation endpoint is separate from the frontend and requires a trusted auth adapter.",
       variant: "warning" as const,
     },
     {
       name: "Alert Broadcast & Siren Dispatch",
-      protocol: "WebPush / SMS / Radio",
-      status: "STANDBY",
-      detail: "Local UI queue armed // Hardware dispatch offline",
+      protocol: "Not configured",
+      status: "NO DISPATCH",
+      detail: "No automated alert generation, notification, or external dispatch is configured.",
       variant: "muted" as const,
     },
   ];
@@ -57,7 +57,7 @@ export default function SystemStatusPage() {
               </h1>
             </div>
             <p className="text-xs text-isie-text-secondary">
-              Real-time verification of local presentation components, graphics hardware, and network interfaces.
+              Static status summary only. No real-time health checks are performed.
             </p>
           </div>
 
@@ -77,12 +77,12 @@ export default function SystemStatusPage() {
                 System Mode: Frontend Preview // Non-Operational Standby
               </div>
               <div className="text-[11px] text-isie-text-dim mt-0.5">
-                Zero fake operational data. All API contracts and UI modules ready for production pipeline integration.
+                No operational provider, persistence, or audit pipeline is currently configured.
               </div>
             </div>
           </div>
           <TacticalBadge variant="muted" size="sm">
-            UPTIME: 100%
+            MONITORING: UNAVAILABLE
           </TacticalBadge>
         </div>
 

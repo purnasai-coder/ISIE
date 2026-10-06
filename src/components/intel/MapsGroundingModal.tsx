@@ -255,12 +255,12 @@ export const MapsGroundingModal: React.FC<MapsGroundingModalProps> = ({
                 {resultText}
               </div>
 
-              {/* Verified Google Maps Citations */}
+              {/* Provider citations are leads, not independent verification */}
               {extractedMaps.length > 0 && (
                 <div className="space-y-2 pt-2 border-t border-white/10">
                   <div className="flex items-center gap-1.5 text-xs font-semibold text-white">
                     <MapPin className="w-3.5 h-3.5 text-red-400" />
-                    <span>VERIFIED GOOGLE MAPS PLACE CITATIONS ({extractedMaps.length})</span>
+                    <span>GOOGLE MAPS CITATIONS // VERIFY CURRENT AVAILABILITY ({extractedMaps.length})</span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {extractedMaps.map((place, idx) => (

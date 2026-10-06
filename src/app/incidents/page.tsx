@@ -111,7 +111,7 @@ export default function IncidentsPage() {
       setStatusSuccess(`Status updated to ${newStatus}`);
       setStatusNote("");
       setTimeout(() => setStatusSuccess(null), 3000);
-    }
+    } else setStatusSuccess(res.error || "Incident status update unavailable.");
     setUpdatingStatus(false);
   };
 
@@ -125,6 +125,9 @@ export default function IncidentsPage() {
         officerRole: user?.role,
         organization: user?.organization,
         callsign: user?.callsign,
+        dataClassification: isDemoMode
+          ? "SYNTHETIC DEMO DATA // NOT OPERATIONAL"
+          : "VERIFIED INPUTS ONLY // NOT AN OPERATIONAL ORDER",
       });
       if (ok) {
         setPdfSuccess(`PDF Downloaded: ${selectedIncident.eventCode}.pdf`);
@@ -147,6 +150,9 @@ export default function IncidentsPage() {
         officerRole: user?.role,
         organization: user?.organization,
         callsign: user?.callsign,
+        dataClassification: isDemoMode
+          ? "SYNTHETIC DEMO DATA // NOT OPERATIONAL"
+          : "VERIFIED INPUTS ONLY // NOT AN OPERATIONAL ORDER",
       });
       if (ok) {
         setCsvSuccess(`CSV Exported: ${selectedIncident.eventCode || selectedIncident.id}.csv`);
@@ -178,7 +184,7 @@ export default function IncidentsPage() {
 
           <div className="flex items-center gap-3">
             <TacticalBadge variant={isDemoMode ? "cyan" : "orange"} size="sm" pulse={incidents.length > 0}>
-              {isDemoMode ? "DEMO SIMULATION" : "LIVE FIRESTORE"} // {incidents.length} INCIDENTS
+              {isDemoMode ? "DEMO SIMULATION" : "VERIFIED INCIDENTS"} // {incidents.length || "UNAVAILABLE"}
             </TacticalBadge>
 
             <TacticalButton
@@ -502,7 +508,7 @@ export default function IncidentsPage() {
                     Fused Intelligence Sources ({selectedIncident.sourceAgencies?.length || selectedIncident.sourceCount})
                   </span>
                   <div className="flex flex-wrap gap-2">
-                    {(selectedIncident.sourceAgencies || ["Official Telemetry"]).map((agency) => (
+                    {(selectedIncident.sourceAgencies || ["Source unavailable"]).map((agency) => (
                       <span
                         key={agency}
                         className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white/5 border border-white/10 rounded-xs font-mono text-xs text-isie-text-secondary"

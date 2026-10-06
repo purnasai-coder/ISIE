@@ -11,7 +11,6 @@ import { RightIntelPanel } from "@/components/panels/RightIntelPanel";
 import { TimelineStrip } from "@/components/timeline/TimelineStrip";
 import { TacticalBadge } from "@/components/ui/TacticalBadge";
 import { Maximize2, Minimize2, Flame, Users, Radio, MapPin, Mic, Globe, Plus } from "lucide-react";
-import { DEMO_INCIDENTS } from "@/data/demo/incidents";
 import { MapsGroundingModal } from "@/components/intel/MapsGroundingModal";
 import { AudioTranscribeModal } from "@/components/intel/AudioTranscribeModal";
 import { SearchGroundingModal } from "@/components/intel/SearchGroundingModal";
@@ -34,7 +33,7 @@ export default function DashboardPage() {
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [transcribeModalOpen, setTranscribeModalOpen] = useState(false);
   const [isCreateIncidentOpen, setIsCreateIncidentOpen] = useState(false);
-  const [incidents, setIncidents] = useState<IntelligenceEvent[]>(isDemoMode ? DEMO_INCIDENTS : []);
+  const [incidents, setIncidents] = useState<IntelligenceEvent[]>([]);
 
   const canCreate = !!user && hasPermission(user.role, "canCreateIncident");
 
@@ -67,11 +66,11 @@ export default function DashboardPage() {
           <div className="flex items-center gap-2.5 min-w-0 shrink-0">
             <span className="w-2 h-2 rounded-full bg-red-500 animate-ping shrink-0" />
             <span className="font-bold text-white uppercase tracking-wider">
-              DEFCON-2 CRISIS STATE
+              STATUS: DATA UNAVAILABLE
             </span>
             <span className="text-isie-text-muted hidden sm:inline">|</span>
             <span className="text-isie-text-secondary hidden sm:inline truncate max-w-[220px]">
-              INDIA NATIONAL SECTOR WATCH
+              NO VERIFIED OPERATIONAL FEED
             </span>
           </div>
 
@@ -92,16 +91,16 @@ export default function DashboardPage() {
             {/* Active Incident Badge */}
             <div className="flex items-center gap-1.5 px-2 py-0.5 bg-white/[0.04] border border-white/10 rounded-xs">
               <Flame className="w-3.5 h-3.5 text-isie-primary shrink-0" />
-              <span className="text-isie-text-dim text-[11px]">ACTIVE:</span>
-              <span className="font-bold text-white">{incidents.length}</span>
-              <span className="text-red-400 text-[10px] font-semibold">({criticalCount} CRIT)</span>
+              <span className="text-isie-text-dim text-[11px]">VERIFIED INCIDENTS:</span>
+              <span className="font-bold text-white">{incidents.length || "UNAVAILABLE"}</span>
+              {incidents.length > 0 && <span className="text-red-400 text-[10px] font-semibold">({criticalCount} CRIT)</span>}
             </div>
 
             {/* Population At Risk (Hidden on mobile) */}
             <div className="hidden md:flex items-center gap-1.5 px-2 py-0.5 bg-white/[0.04] border border-white/10 rounded-xs">
               <Users className="w-3.5 h-3.5 text-isie-cyan shrink-0" />
-              <span className="text-isie-text-dim text-[11px]">AT RISK:</span>
-              <span className="font-bold text-amber-300">{totalAtRisk.toLocaleString()}</span>
+              <span className="text-isie-text-dim text-[11px]">POPULATION AT RISK:</span>
+              <span className="font-bold text-amber-300">{incidents.length ? totalAtRisk.toLocaleString() : "UNAVAILABLE"}</span>
             </div>
 
             {/* Google Search Grounding Quick Tool */}
@@ -137,7 +136,7 @@ export default function DashboardPage() {
             {/* Live Telemetry Sensor Stream (Hidden on tablet/mobile) */}
             <div className="hidden xl:flex items-center gap-1.5 px-2 py-0.5 bg-sky-950/40 border border-sky-500/30 rounded-xs text-sky-200 text-[11px]">
               <Radio className="w-3 h-3 text-isie-cyan animate-pulse shrink-0" />
-              <span className="font-semibold tracking-wide">FUSION: LIVE TELEMETRY</span>
+              <span className="font-semibold tracking-wide">EXTERNAL TELEMETRY: NOT CONNECTED</span>
             </div>
           </div>
         </div>
