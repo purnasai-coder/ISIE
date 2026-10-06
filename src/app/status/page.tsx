@@ -1,11 +1,46 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { Server, Activity, ShieldAlert, Cpu, Radio, CheckCircle, AlertTriangle } from "lucide-react";
 import { TacticalBadge } from "@/components/ui/TacticalBadge";
 
 export default function SystemStatusPage() {
+  const [backendState, setBackendState] = useState<"CHECKING" | "UNCONFIGURED" | "UNREACHABLE" | "LIMITED">("CHECKING");
+  const [backendDetail, setBackendDetail] = useState("Checking configured backend; this does not verify operational readiness.");
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/backend-health", { cache: "no-store" })
+      .then(async (response) => {
+        if (!active) return;
+        if (response.status === 503) {
+          setBackendState("UNCONFIGURED");
+          setBackendDetail("ISIE_BACKEND_URL is not configured; backend state is unavailable.");
+          return;
+        }
+        const result = await response.json();
+        if (!response.ok || result.status !== "limited") {
+          setBackendState("UNREACHABLE");
+          setBackendDetail("Configured backend could not be reached; its state is unavailable.");
+          return;
+        }
+        setBackendState("LIMITED");
+        setBackendDetail(
+          `Auth: ${result.authenticationConfigured ? "configured" : "unavailable"}; persistence: ${result.persistenceHealthy ? "healthy" : "unavailable"}; audit chain: ${result.auditIntegrity}; measurement adapter: ${result.providersConfigured ? "configured, not independently checked" : "not configured"}. Not operationally ready.`
+        );
+      })
+      .catch(() => {
+        if (active) {
+          setBackendState("UNREACHABLE");
+          setBackendDetail("Configured backend could not be reached; its state is unavailable.");
+        }
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
   const nodes = [
     {
       name: "Spatial GIS Projection Core",
@@ -22,17 +57,17 @@ export default function SystemStatusPage() {
       variant: "warning" as const,
     },
     {
-      name: "AI Carrying Capacity Estimator",
-      protocol: "Prototype arithmetic",
-      status: "NOT OPERATIONAL",
-      detail: "Prototype analysis only; no validated model or live input integration is configured.",
-      variant: "warning" as const,
+      name: "Python Backend API",
+      protocol: "Server-side health probe",
+      status: backendState,
+      detail: backendDetail,
+      variant: backendState === "LIMITED" ? "warning" as const : "muted" as const,
     },
     {
       name: "Stochastic What-If Simulation Engine",
       protocol: "Python prototype",
-      status: "NOT CONNECTED",
-      detail: "Simulation endpoint is separate from the frontend and requires a trusted auth adapter.",
+      status: "PROTOTYPE_NOT_OPERATIONAL",
+      detail: "A hypothetical-only API exists but is not wired to the frontend and is not validated for decisions.",
       variant: "warning" as const,
     },
     {
@@ -57,7 +92,7 @@ export default function SystemStatusPage() {
               </h1>
             </div>
             <p className="text-xs text-isie-text-secondary">
-              Static status summary only. No real-time health checks are performed.
+              Backend liveness is probed when configured; other component states below are static declarations.
             </p>
           </div>
 
@@ -77,12 +112,12 @@ export default function SystemStatusPage() {
                 System Mode: Frontend Preview // Non-Operational Standby
               </div>
               <div className="text-[11px] text-isie-text-dim mt-0.5">
-                No operational provider, persistence, or audit pipeline is currently configured.
+                Prototype only: no verified source feeds, validated models, dispatch, or production approval.
               </div>
             </div>
           </div>
           <TacticalBadge variant="muted" size="sm">
-            MONITORING: UNAVAILABLE
+            MONITORING: NOT CONFIGURED
           </TacticalBadge>
         </div>
 
