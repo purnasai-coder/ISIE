@@ -159,7 +159,8 @@ export interface Incident {
   hazardZoneLevel?: HazardZoneClassification;
   carryingCapacityStatus?: CarryingCapacityStatus;
   relocationScore?: number;
-  escalationRisk?: "EXTREME" | "ELEVATED" | "STABLE" | "SUBSIDING";
+  escalationRisk?: "EXTREME" | "ELEVATED" | "STABLE" | "SUBSIDING" | "UNASSESSED";
+  userProvidedPopulationAtRisk?: number;
   createdBy?: string;
   createdByName?: string;
   createdAt: string;
@@ -199,7 +200,8 @@ export interface IntelligenceEvent extends Partial<Incident> {
   hazardZoneLevel?: HazardZoneClassification;
   carryingCapacityStatus?: CarryingCapacityStatus;
   relocationScore?: number;
-  escalationRisk: "ELEVATED" | "STABLE" | "SUBSIDING" | "EXTREME";
+  escalationRisk: "ELEVATED" | "STABLE" | "SUBSIDING" | "EXTREME" | "UNASSESSED";
+  userProvidedPopulationAtRisk?: number;
   evidenceIds: string[];
   // Extended Operational Incident Schema
   incidentType?: IncidentSpecificType | string;

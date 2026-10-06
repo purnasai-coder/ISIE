@@ -77,7 +77,7 @@ export default function CrisisIntelligencePage() {
     return matchesCategory && matchesSearch;
   });
 
-  const canUpdate = user && !isDemoMode && hasPermission(user.role, "canUpdateIncident");
+  const canUpdate = user && (isDemoMode || hasPermission(user.role, "canUpdateIncident"));
 
   const handleUpdateStatus = async (newStatus: EventStatus) => {
     if (!selectedIncident || !user || !canUpdate) return;
@@ -215,7 +215,7 @@ export default function CrisisIntelligencePage() {
                     <div className="flex items-center justify-between text-[11px] font-mono text-isie-text-secondary pt-2 border-t border-white/5">
                       <span className="truncate max-w-[200px]">{inc.locationName}</span>
                       <span className="text-amber-300 font-semibold shrink-0">
-                        {inc.populationAtRisk.toLocaleString()} At Risk
+                        {inc.populationAtRisk > 0 ? `${inc.populationAtRisk.toLocaleString()} simulated` : "Exposure not assessed"}
                       </span>
                     </div>
                   </div>
@@ -290,7 +290,7 @@ export default function CrisisIntelligencePage() {
                   <div className="p-2.5 bg-white/[0.02] border border-white/5 rounded-xs">
                     <span className="text-[9px] text-isie-text-dim block uppercase">POPULATION AT RISK</span>
                     <span className="text-base font-bold text-amber-300">
-                      {selectedIncident.populationAtRisk.toLocaleString()}
+                      {selectedIncident.populationAtRisk > 0 ? selectedIncident.populationAtRisk.toLocaleString() : "NOT ASSESSED"}
                     </span>
                   </div>
 
@@ -317,7 +317,7 @@ export default function CrisisIntelligencePage() {
                           : "text-amber-400"
                       }`}
                     >
-                      {selectedIncident.escalationRisk || "HIGH"}
+                      {selectedIncident.escalationRisk || "UNASSESSED"}
                     </span>
                   </div>
                 </div>

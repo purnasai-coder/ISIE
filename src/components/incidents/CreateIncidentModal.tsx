@@ -114,7 +114,7 @@ export function CreateIncidentModal({
 
   if (!isOpen) return null;
 
-  const canCreate = !!user && hasPermission(user.role, "canCreateIncident");
+  const canCreate = !!user && (isDemoMode || hasPermission(user.role, "canCreateIncident"));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -210,14 +210,16 @@ export function CreateIncidentModal({
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-mono text-xs font-bold uppercase tracking-wider text-white">
-                  OPERATIONAL DISPATCH // CREATE INCIDENT
+                  {isDemoMode ? "TABLETOP DEMO // ADD USER-PROVIDED CASE" : "OPERATIONAL DISPATCH // CREATE INCIDENT"}
                 </span>
                 <TacticalBadge variant="critical" size="sm">
-                  SUBMISSION DISABLED
+                  {isDemoMode ? "LOCAL DEMO ONLY" : "SUBMISSION DISABLED"}
                 </TacticalBadge>
               </div>
               <p className="text-[10px] text-isie-text-muted font-mono">
-                INCIDENT SUBMISSION REQUIRES A TRUSTED BACKEND WITH PROVENANCE VALIDATION AND AUDIT LOGGING
+                {isDemoMode
+                  ? "SAVED ONLY IN THIS BROWSER DEMO WORKSPACE // UNVERIFIED // NO ALERT, DISPATCH OR OPERATIONAL EFFECT"
+                  : "INCIDENT SUBMISSION REQUIRES A TRUSTED BACKEND WITH PROVENANCE VALIDATION AND AUDIT LOGGING"}
               </p>
             </div>
           </div>
@@ -249,10 +251,10 @@ export function CreateIncidentModal({
               <ShieldCheck className="w-5 h-5 text-cyan-400 shrink-0 mt-0.5" />
               <div className="text-xs">
                 <div className="font-mono font-bold text-cyan-300 uppercase">
-                  Backend Unavailable
+                  Simulated Intake Only
                 </div>
                 <div className="text-isie-text-dim text-[11px] mt-0.5">
-                  Incident entry is disabled until a trusted backend validates source provenance and records an immutable audit event. No incident will be saved.
+                  This case is stored locally in your browser as user-provided and unverified. It is not sent to the backend, does not create alerts, and has no real-world effect.
                 </div>
               </div>
             </div>
@@ -511,14 +513,14 @@ export function CreateIncidentModal({
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                 <div className="space-y-1">
                   <label className="font-mono text-[11px] uppercase tracking-wider text-isie-text-muted">
-                    Population at Risk *
+                    {isDemoMode ? "User-provided population (unverified)" : "Population at risk"}
                   </label>
                   <input
                     type="number"
                     min={0}
                     value={populationAtRisk}
                     onChange={(e) => setPopulationAtRisk(e.target.value)}
-                    placeholder="Leave blank if unavailable"
+                    placeholder="Leave blank if unknown"
                     className="w-full bg-isie-panel-light/60 border border-white/10 rounded-xs px-3 py-2 text-xs font-mono text-white outline-none focus:border-amber-500/60"
                   />
                 </div>

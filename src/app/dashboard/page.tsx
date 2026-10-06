@@ -35,7 +35,7 @@ export default function DashboardPage() {
   const [isCreateIncidentOpen, setIsCreateIncidentOpen] = useState(false);
   const [incidents, setIncidents] = useState<IntelligenceEvent[]>([]);
 
-  const canCreate = !!user && hasPermission(user.role, "canCreateIncident");
+  const canCreate = !!user && (isDemoMode || hasPermission(user.role, "canCreateIncident"));
 
   useEffect(() => {
     setMounted(true);
@@ -91,7 +91,7 @@ export default function DashboardPage() {
             {/* Active Incident Badge */}
             <div className="flex items-center gap-1.5 px-2 py-0.5 bg-white/[0.04] border border-white/10 rounded-xs">
               <Flame className="w-3.5 h-3.5 text-isie-primary shrink-0" />
-              <span className="text-isie-text-dim text-[11px]">VERIFIED INCIDENTS:</span>
+              <span className="text-isie-text-dim text-[11px]">{isDemoMode ? "SIMULATED CASES:" : "VERIFIED INCIDENTS:"}</span>
               <span className="font-bold text-white">{incidents.length || "UNAVAILABLE"}</span>
               {incidents.length > 0 && <span className="text-red-400 text-[10px] font-semibold">({criticalCount} CRIT)</span>}
             </div>
@@ -99,7 +99,7 @@ export default function DashboardPage() {
             {/* Population At Risk (Hidden on mobile) */}
             <div className="hidden md:flex items-center gap-1.5 px-2 py-0.5 bg-white/[0.04] border border-white/10 rounded-xs">
               <Users className="w-3.5 h-3.5 text-isie-cyan shrink-0" />
-              <span className="text-isie-text-dim text-[11px]">POPULATION AT RISK:</span>
+              <span className="text-isie-text-dim text-[11px]">{isDemoMode ? "SAMPLE VALUE (SIMULATED):" : "POPULATION AT RISK:"}</span>
               <span className="font-bold text-amber-300">{incidents.length ? totalAtRisk.toLocaleString() : "UNAVAILABLE"}</span>
             </div>
 

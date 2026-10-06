@@ -81,8 +81,8 @@ export default function IncidentsPage() {
     };
   }, [isDemoMode]);
 
-  const canCreate = user && !isDemoMode && hasPermission(user.role, "canCreateIncident");
-  const canUpdate = user && !isDemoMode && hasPermission(user.role, "canUpdateIncident");
+  const canCreate = user && (isDemoMode || hasPermission(user.role, "canCreateIncident"));
+  const canUpdate = user && (isDemoMode || hasPermission(user.role, "canUpdateIncident"));
 
   const filteredIncidents = incidents.filter((inc) => {
     const matchesSearch =
@@ -296,15 +296,15 @@ export default function IncidentsPage() {
 
                     <div className="grid grid-cols-2 gap-2 pt-2 border-t border-white/5 font-mono text-[11px]">
                       <div>
-                        <span className="text-isie-text-dim block">POPULATION:</span>
+                        <span className="text-isie-text-dim block">{incident.populationAtRisk > 0 ? "SIMULATED EXPOSURE:" : "VERIFIED POPULATION:"}</span>
                         <span className="text-white font-bold">
-                          {incident.populationAtRisk.toLocaleString()}
+                          {incident.populationAtRisk > 0 ? incident.populationAtRisk.toLocaleString() : "NOT ASSESSED"}
                         </span>
                       </div>
                       <div>
                         <span className="text-isie-text-dim block">RELOC. INDEX:</span>
                         <span className="text-isie-primary font-bold">
-                          {incident.relocationScore || 65} / 100
+                          {incident.relocationScore !== undefined ? `${incident.relocationScore} / 100` : "NOT ASSESSED"}
                         </span>
                       </div>
                     </div>
@@ -429,25 +429,32 @@ export default function IncidentsPage() {
                   <div className="p-3 bg-white/[0.02] border border-white/5 rounded-xs">
                     <div className="text-[10px] text-isie-text-dim uppercase">EXPOSED HABITATIONS</div>
                     <div className="text-lg font-bold text-white mt-1">
-                      {selectedIncident.affectedHabitationsCount || Math.max(1, Math.round(selectedIncident.populationAtRisk / 3000))} HAMLETS
+                      {selectedIncident.affectedHabitationsCount !== undefined ? `${selectedIncident.affectedHabitationsCount} (fixture)` : "NOT ASSESSED"}
                     </div>
                   </div>
                   <div className="p-3 bg-white/[0.02] border border-white/5 rounded-xs">
                     <div className="text-[10px] text-isie-text-dim uppercase">POPULATION EXPOSURE</div>
                     <div className="text-lg font-bold text-white mt-1">
-                      {selectedIncident.populationAtRisk.toLocaleString()}
+                      {selectedIncident.populationAtRisk > 0 ? selectedIncident.populationAtRisk.toLocaleString() : "NOT ASSESSED"}
                     </div>
+                    {selectedIncident.userProvidedPopulationAtRisk !== undefined && (
+                      <div className="p-3 border border-amber-500/30 bg-amber-950/20 rounded-xs">
+                        <div className="text-[10px] font-mono text-amber-200 uppercase">USER-PROVIDED QUANTITY // UNVERIFIED</div>
+                        <div className="text-sm font-bold text-white mt-1">{selectedIncident.userProvidedPopulationAtRisk.toLocaleString()}</div>
+                        <div className="text-[10px] text-isie-text-dim mt-1">Not used as confirmed exposure, risk score, or response input.</div>
+                      </div>
+                    )}
                   </div>
                   <div className="p-3 bg-white/[0.02] border border-white/5 rounded-xs">
                     <div className="text-[10px] text-isie-text-dim uppercase">CARRYING CAPACITY</div>
                     <div className="text-lg font-bold text-red-400 mt-1">
-                      {selectedIncident.carryingCapacityStatus || "CRITICAL"}
+                      {selectedIncident.carryingCapacityStatus || "NOT ASSESSED"}
                     </div>
                   </div>
                   <div className="p-3 bg-white/[0.02] border border-white/5 rounded-xs">
                     <div className="text-[10px] text-isie-text-dim uppercase">RELOCATION PRIORITY</div>
                     <div className="text-lg font-bold text-isie-primary mt-1">
-                      {selectedIncident.relocationScore || 85} / 100
+                      {selectedIncident.relocationScore !== undefined ? `${selectedIncident.relocationScore} / 100 (SIMULATED)` : "NOT ASSESSED"}
                     </div>
                   </div>
                 </div>

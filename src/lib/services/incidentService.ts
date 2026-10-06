@@ -10,6 +10,9 @@ import { DEMO_INCIDENTS } from "@/data/demo/incidents";
 import { AuthUser } from "@/lib/auth/AuthContext";
 import { hasPermission } from "@/lib/auth/roles";
 import { hasFreshVerifiedProvenance } from "@/lib/utils/dataQuality";
+import { createDemoCollection } from "@/lib/prototype/demoWorkspace.mjs";
+
+const demoIncidents = createDemoCollection("isie-prototype-demo-incidents", DEMO_INCIDENTS);
 
 export interface CreateIncidentInput {
   title: string;
@@ -42,7 +45,7 @@ export interface CreateIncidentInput {
 
 export class IncidentService {
   async getIncidents(isDemoMode = false): Promise<IntelligenceEvent[]> {
-    if (isDemoMode) return [...DEMO_INCIDENTS];
+    if (isDemoMode) return demoIncidents.getAll();
     if (!auth.currentUser) return [];
 
     try {
@@ -60,7 +63,7 @@ export class IncidentService {
   }
 
   async getIncidentById(id: string, isDemoMode = false): Promise<IntelligenceEvent | null> {
-    if (isDemoMode) return DEMO_INCIDENTS.find((incident) => incident.id === id) || null;
+    if (isDemoMode) return demoIncidents.getAll().find((incident) => incident.id === id) || null;
     if (!auth.currentUser) return null;
 
     try {
@@ -86,8 +89,8 @@ export class IncidentService {
       : typeof arg2 === "boolean" ? arg2 : false;
 
     if (isDemoMode) {
-      callback([...DEMO_INCIDENTS]);
-      return () => {};
+      callback(demoIncidents.getAll());
+      return demoIncidents.subscribe(callback);
     }
     if (!auth.currentUser) {
       callback([]);
@@ -123,8 +126,58 @@ export class IncidentService {
     _input: CreateIncidentInput,
     creator: AuthUser
   ): Promise<{ success: boolean; incidentId?: string; error?: string }> {
-    if (!creator || creator.isDemo || !auth.currentUser || creator.id !== auth.currentUser.uid) {
-      return { success: false, error: "A signed-in, non-demo user is required." };
+    if (creator?.isDemo) {
+      const title = _input.title.trim();
+      if (title.length < 3 || !_input.summary.trim() || !_input.source.trim()) {
+        return { success: false, error: "Provide a title, report details, and identify the user-provided source." };
+      }
+      if (
+        !_input.coordinates ||
+        !Number.isFinite(_input.coordinates.lat) ||
+        _input.coordinates.lat < -90 ||
+        _input.coordinates.lat > 90 ||
+        !Number.isFinite(_input.coordinates.lng) ||
+        _input.coordinates.lng < -180 ||
+        _input.coordinates.lng > 180
+      ) {
+        return { success: false, error: "Coordinates must be valid latitude and longitude values." };
+      }
+      const id = `DEMO-USER-${Date.now()}`;
+      const timestamp = new Date().toISOString();
+      demoIncidents.add({
+        id,
+        eventCode: id,
+        title,
+        category: _input.category,
+        severity: _input.severity,
+        status: "REPORTED",
+        timestamp,
+        locationName: _input.locationName.trim() || "User-provided location",
+        region: _input.region || "User-provided",
+        coordinates: _input.coordinates,
+        confidenceScore: 0,
+        sourceCount: 1,
+        sourceAgencies: [`USER-PROVIDED: ${_input.source.trim()}`],
+        verificationStatus: "UNVERIFIED",
+        summary: _input.summary.trim(),
+        affectedHabitationsCount: 0,
+        populationAtRisk: 0,
+        userProvidedPopulationAtRisk: _input.populationAtRisk,
+        hazardZoneLevel: undefined,
+        carryingCapacityStatus: undefined,
+        relocationScore: undefined,
+        escalationRisk: "UNASSESSED",
+        evidenceIds: [],
+        source: `USER_PROVIDED_UNVERIFIED: ${_input.source.trim()}`,
+        confidence: "LOW",
+        createdAt: timestamp,
+        updatedAt: timestamp,
+        additionalNotes: _input.additionalNotes?.trim(),
+      });
+      return { success: true, incidentId: id };
+    }
+    if (!creator || !auth.currentUser || creator.id !== auth.currentUser.uid) {
+      return { success: false, error: "A signed-in user is required." };
     }
     if (!hasPermission(creator.role, "canCreateIncident")) {
       return { success: false, error: `Role '${creator.role}' cannot create incidents.` };
@@ -140,6 +193,9 @@ export class IncidentService {
     _updates: Partial<IntelligenceEvent>,
     _actor?: AuthUser
   ): Promise<boolean> {
+    if (_actor?.isDemo) {
+      return demoIncidents.update(_id, (incident) => ({ ...incident, ..._updates, updatedAt: new Date().toISOString() }));
+    }
     return false;
   }
 
@@ -149,6 +205,17 @@ export class IncidentService {
     _notes: string,
     _actor: AuthUser
   ): Promise<{ success: boolean; error: string }> {
+    if (_actor.isDemo) {
+      const updated = demoIncidents.update(_id, (incident) => ({
+        ...incident,
+        status: _newStatus,
+        updatedAt: new Date().toISOString(),
+        additionalNotes: [incident.additionalNotes, `LOCAL DEMO NOTE: ${_notes}`].filter(Boolean).join("\n"),
+      }));
+      return updated
+        ? { success: true, error: "" }
+        : { success: false, error: "Demo case was not found." };
+    }
     return {
       success: false,
       error: "Incident updates are disabled until a trusted backend with audit logging is configured.",
