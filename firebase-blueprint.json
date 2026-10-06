@@ -1,0 +1,403 @@
+{
+  "entities": {
+    "users": {
+      "title": "User",
+      "description": "Authenticated strategic intelligence operator or analyst profile",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "Unique Firebase Authentication UID"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Primary communication and sign-in email"
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Full name or operational callsign of the user"
+        },
+        "photoURL": {
+          "type": "string",
+          "description": "Avatar image URL from Google Sign-In or profile"
+        },
+        "role": {
+          "type": "string",
+          "enum": ["ADMIN", "OPERATOR", "ANALYST", "VIEWER"],
+          "description": "Operational designation or system authority level"
+        },
+        "organization": {
+          "type": "string",
+          "description": "Command division or parent crisis response agency"
+        },
+        "clearance": {
+          "type": "string",
+          "description": "Strategic intelligence classification rating"
+        },
+        "callsign": {
+          "type": "string",
+          "description": "Tactical radio callsign"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Account provision timestamp in ISO format"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last profile update timestamp"
+        },
+        "lastLoginAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Most recent session authentication timestamp"
+        },
+        "preferences": {
+          "type": "object",
+          "description": "Display, ergonomics and spatial projection preferences"
+        }
+      },
+      "required": ["uid", "email"]
+    },
+    "tactical_logs": {
+      "title": "Tactical Log",
+      "description": "Tactical situation log, voice transcription, or geo-grounded intelligence report",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique record identifier"
+        },
+        "userId": {
+          "type": "string",
+          "description": "UID of the operator who created the log"
+        },
+        "title": {
+          "type": "string",
+          "description": "Brief tactical headline or event label"
+        },
+        "content": {
+          "type": "string",
+          "description": "Transcription text, intelligence brief, or ground report"
+        },
+        "source": {
+          "type": "string",
+          "enum": ["VOICE_TRANSCRIPTION", "MAPS_GROUNDING", "FIELD_NOTE", "INCIDENT_UPDATE"],
+          "description": "Origin ingestion channel for this record"
+        },
+        "sector": {
+          "type": "string",
+          "description": "Operational sector or region name"
+        },
+        "coordinates": {
+          "type": "object",
+          "description": "Geographic coordinates of the tactical entry"
+        },
+        "groundingData": {
+          "type": "object",
+          "description": "Google Maps citations, places, or metadata"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp in ISO format"
+        }
+      },
+      "required": ["userId", "content", "source", "createdAt"]
+    },
+    "incidents": {
+      "title": "Incident",
+      "description": "Operational crisis situation and multi-hazard intelligence record",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Canonical incident record identifier"
+        },
+        "eventCode": {
+          "type": "string",
+          "description": "Short military or emergency event code"
+        },
+        "title": {
+          "type": "string",
+          "description": "Operational headline of the crisis"
+        },
+        "category": {
+          "type": "string",
+          "enum": ["HYDROMETEOROLOGICAL", "GEOPHYSICAL", "STRUCTURAL_INFRASTRUCTURE", "RELOCATION_DISPLACEMENT", "BORDER_STRATEGIC", "ECOLOGICAL", "NATURAL_HAZARD", "SECURITY_HUMAN", "HEALTH_BIOLOGICAL"],
+          "description": "Hazard classification category"
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["CRITICAL", "HIGH", "MEDIUM", "MODERATE", "LOW", "INFORMATIONAL"],
+          "description": "Tactical severity classification"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["DRAFT", "REPORTED", "VERIFIED", "ACTIVE", "MONITORING", "CONTAINED", "RESOLVED", "ARCHIVED", "EMERGING"],
+          "description": "Operational lifecycle state"
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Incident occurrence or report timestamp"
+        },
+        "locationName": {
+          "type": "string",
+          "description": "Geographic name of the affected sector"
+        },
+        "region": {
+          "type": "string",
+          "description": "Parent regional theater or watershed"
+        },
+        "coordinates": {
+          "type": "object",
+          "description": "Latitude and longitude coordinates"
+        },
+        "confidenceScore": {
+          "type": "number",
+          "description": "Confidence metric from 0.0 to 1.0"
+        },
+        "sourceAgencies": {
+          "type": "array",
+          "description": "Authoritative reporting or sensor agencies"
+        },
+        "verificationStatus": {
+          "type": "string",
+          "description": "Authoritative verification status"
+        },
+        "summary": {
+          "type": "string",
+          "description": "Executive intelligence brief"
+        },
+        "populationAtRisk": {
+          "type": "number",
+          "description": "Estimated exposed human population"
+        },
+        "affectedHabitationsCount": {
+          "type": "number",
+          "description": "Count of endangered villages, wards, or sectors"
+        },
+        "hazardZoneLevel": {
+          "type": "string",
+          "description": "RED_ZONE, WARNING_ZONE, or SAFE_ZONE"
+        },
+        "carryingCapacityStatus": {
+          "type": "string",
+          "description": "Resource reserve stress rating"
+        },
+        "relocationScore": {
+          "type": "number",
+          "description": "Relocation priority score from 0 to 100"
+        },
+        "escalationRisk": {
+          "type": "string",
+          "description": "Forecast escalation velocity"
+        },
+        "evidenceIds": {
+          "type": "array",
+          "description": "Foreign keys to supporting evidence records"
+        },
+        "createdBy": {
+          "type": "string",
+          "description": "UID of the operator who logged the incident"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp in ISO format"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last modification timestamp in ISO format"
+        }
+      },
+      "required": ["title", "category", "severity", "locationName", "coordinates"]
+    },
+    "alerts": {
+      "title": "Alert",
+      "description": "Tactical warning or dispatch alarm associated with an operational incident",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique alert identifier"
+        },
+        "alertCode": {
+          "type": "string",
+          "description": "Short alert display code"
+        },
+        "title": {
+          "type": "string",
+          "description": "Alert dispatch headline"
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFORMATIONAL"],
+          "description": "Severity level"
+        },
+        "alertType": {
+          "type": "string",
+          "description": "Alert category"
+        },
+        "location": {
+          "type": "string",
+          "description": "Location description"
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Issuance timestamp"
+        },
+        "sourceAgency": {
+          "type": "string",
+          "description": "Issuing command agency"
+        },
+        "confidenceScore": {
+          "type": "number",
+          "description": "Confidence index"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["ACTIVE", "ACKNOWLEDGED", "MUTED", "DISMISSED"],
+          "description": "Current alert lifecycle state"
+        },
+        "relatedEventId": {
+          "type": "string",
+          "description": "Linked operational incident ID"
+        },
+        "recommendedAction": {
+          "type": "string",
+          "description": "Tactical standard operating procedure"
+        }
+      },
+      "required": ["title", "severity", "status"]
+    },
+    "timelines": {
+      "title": "Timeline Event",
+      "description": "Chronological milestone anchor in crisis progression",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique timeline milestone ID"
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Temporal progression marker"
+        },
+        "title": {
+          "type": "string",
+          "description": "Event milestone headline"
+        },
+        "category": {
+          "type": "string",
+          "description": "Hazard category"
+        },
+        "severity": {
+          "type": "string",
+          "description": "Severity rating"
+        },
+        "phase": {
+          "type": "string",
+          "enum": ["HISTORICAL_BASELINE", "EARLY_TRIGGER", "RAPID_CASCADE", "CURRENT_OBSERVATION", "PROJECTED_WINDOW"],
+          "description": "Progression phase"
+        },
+        "summary": {
+          "type": "string",
+          "description": "Milestone brief"
+        },
+        "coordinates": {
+          "type": "object",
+          "description": "Geographic coordinates"
+        },
+        "relatedZoneId": {
+          "type": "string",
+          "description": "Foreign key to parent operational incident"
+        }
+      },
+      "required": ["title", "phase", "timestamp"]
+    },
+    "notifications": {
+      "title": "Notification",
+      "description": "Tactical dispatch broadcast or operational status update",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Notification ID"
+        },
+        "title": {
+          "type": "string",
+          "description": "Notification headline"
+        },
+        "message": {
+          "type": "string",
+          "description": "Detailed broadcast message"
+        },
+        "category": {
+          "type": "string",
+          "enum": ["CRITICAL_ALERT", "INTEL_UPDATE", "SYSTEM", "SCENARIO"],
+          "description": "Broadcast category"
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Broadcast timestamp"
+        },
+        "read": {
+          "type": "boolean",
+          "description": "Acknowledge read state"
+        },
+        "priority": {
+          "type": "string",
+          "enum": ["HIGH", "NORMAL", "LOW"],
+          "description": "Priority weighting"
+        },
+        "actionUrl": {
+          "type": "string",
+          "description": "Navigation route"
+        }
+      },
+      "required": ["title", "message", "category", "read"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/users"
+      },
+      "description": "Private profile document for each operator, accessible only by owner"
+    },
+    "/users/{userId}/tactical_logs/{logId}": {
+      "schema": {
+        "$ref": "#/entities/tactical_logs"
+      },
+      "description": "Per-user tactical intelligence logs, audio transcriptions, and geo-grounded reports"
+    },
+    "/incidents/{incidentId}": {
+      "schema": {
+        "$ref": "#/entities/incidents"
+      },
+      "description": "Shared operational crisis incidents and hazard situations"
+    },
+    "/alerts/{alertId}": {
+      "schema": {
+        "$ref": "#/entities/alerts"
+      },
+      "description": "Operational early warnings, sirens, and tactical dispatch alarms"
+    },
+    "/timelines/{timelineId}": {
+      "schema": {
+        "$ref": "#/entities/timelines"
+      },
+      "description": "Milestones and chronological progression anchors for active incidents"
+    },
+    "/notifications/{notificationId}": {
+      "schema": {
+        "$ref": "#/entities/notifications"
+      },
+      "description": "Broadcast notifications and situation alerts across operators"
+    }
+  }
+}

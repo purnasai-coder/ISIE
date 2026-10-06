@@ -1,0 +1,91 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@import "leaflet/dist/leaflet.css";
+
+:root {
+  --background: #05070b;
+  --foreground: #f5f7fa;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow-x: hidden;
+}
+
+/* ISIE Geographic Basemap Styling (OpenStreetMap & Satellite) */
+.map-style-tactical .leaflet-tile-pane {
+  filter: brightness(0.85) contrast(1.15) saturate(0.8) hue-rotate(190deg);
+  transition: filter 0.25s ease;
+}
+
+.map-style-natural .leaflet-tile-pane {
+  filter: brightness(0.98) contrast(1.02);
+  transition: filter 0.25s ease;
+}
+
+.map-style-satellite .leaflet-tile-pane {
+  filter: brightness(1.02) contrast(1.08) saturate(1.05);
+  transition: filter 0.25s ease;
+}
+
+/* Custom Tactical Scrollbars */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(13, 19, 28, 0.6);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 122, 24, 0.5);
+}
+
+/* Tactical Leaflet Marker & Tooltip Enhancements */
+.tactical-marker-clean {
+  background: transparent !important;
+  border: none !important;
+}
+
+.tactical-tooltip {
+  background: rgba(5, 7, 14, 0.95) !important;
+  border: 1px solid rgba(56, 189, 248, 0.5) !important;
+  color: #f1f5f9 !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+  font-size: 11px !important;
+  padding: 4px 8px !important;
+  border-radius: 2px !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.8) !important;
+}
+
+.tactical-tooltip::before {
+  border-top-color: rgba(56, 189, 248, 0.5) !important;
+}
+
+.leaflet-popup-content-wrapper {
+  background: rgba(5, 7, 14, 0.96) !important;
+  border: 1px solid rgba(56, 189, 248, 0.4) !important;
+  border-radius: 2px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.85) !important;
+  color: #f1f5f9 !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+.leaflet-popup-tip {
+  background: rgba(5, 7, 14, 0.96) !important;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
