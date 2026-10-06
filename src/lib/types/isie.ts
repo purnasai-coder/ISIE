@@ -112,7 +112,7 @@ export interface RelocationIntelligence {
   evacuationRoutesIdentified: {
     routeId: string;
     corridorName: string;
-    status: "OPEN" | "IMPEDED" | "SEVERED";
+    status: "OPEN" | "IMPEDED" | "SEVERED" | "NOT_ASSESSED";
     clearanceBottlenecks: string[];
   }[];
   designatedShelters: {
@@ -233,8 +233,8 @@ export type OperationalIncident = Incident;
 export interface EvidenceItem {
   id: string;
   title: string;
-  sourceName: "IMD Mausam" | "CWC Hydrology" | "ISRO / NRSC NDEM" | "Copernicus Sentinel" | "NASA FIRMS" | "OpenStreetMap" | "Field Command Telemetry";
-  sourceType: "SATELLITE_SAR" | "SATELLITE_OPTICAL" | "RADAR_WEATHER" | "RIVER_GAUGE" | "THERMAL_ANOMALY" | "OFFICIAL_ADVISORY" | "TELEMETRY_SENSOR";
+  sourceName: "IMD Mausam" | "CWC Hydrology" | "ISRO / NRSC NDEM" | "Copernicus Sentinel" | "NASA FIRMS" | "OpenStreetMap" | "Field Command Telemetry" | "Synthetic exercise fixture" | "User-provided (unverified)";
+  sourceType: "SATELLITE_SAR" | "SATELLITE_OPTICAL" | "RADAR_WEATHER" | "RIVER_GAUGE" | "THERMAL_ANOMALY" | "OFFICIAL_ADVISORY" | "TELEMETRY_SENSOR" | "SYNTHETIC_FIXTURE" | "USER_PROVIDED_REPORT";
   timestamp: string;
   coordinates?: GeoCoordinates;
   verificationStatus: VerificationStatus;
@@ -257,7 +257,7 @@ export interface TimelineEvent {
   title: string;
   category: EventCategory;
   severity: SeverityLevel;
-  phase: "HISTORICAL_BASELINE" | "EARLY_TRIGGER" | "RAPID_CASCADE" | "CURRENT_OBSERVATION" | "PROJECTED_WINDOW";
+  phase: "HISTORICAL_BASELINE" | "EARLY_TRIGGER" | "RAPID_CASCADE" | "CURRENT_OBSERVATION" | "PROJECTED_WINDOW" | "EXERCISE_STEP";
   summary: string;
   coordinates?: GeoCoordinates;
   relatedZoneId?: string;

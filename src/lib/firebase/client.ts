@@ -33,7 +33,31 @@ import {
   getDocFromServer,
   setLogLevel,
 } from "firebase/firestore";
-import firebaseConfig from "../../../firebase-applet-config.json";
+const configuredFirebase = {
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "",
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "",
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "",
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "",
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "",
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "",
+  firestoreDatabaseId: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_ID || "",
+};
+
+export const isFirebaseConfigured = Boolean(
+  configuredFirebase.apiKey &&
+    configuredFirebase.authDomain &&
+    configuredFirebase.projectId &&
+    configuredFirebase.appId
+);
+
+const firebaseConfig = isFirebaseConfigured
+  ? configuredFirebase
+  : {
+      ...configuredFirebase,
+      apiKey: "isie-prototype-auth-disabled",
+      projectId: "isie-prototype-unconfigured",
+      appId: "1:000000000000:web:isie-prototype-disabled",
+    };
 
 // Configure Firestore log level and filter benign offline notices in browser
 try {

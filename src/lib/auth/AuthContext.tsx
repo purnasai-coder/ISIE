@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import {
   auth,
+  isFirebaseConfigured,
   googleProvider,
   signInWithPopup,
   signInWithEmailAndPassword,
@@ -81,6 +82,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.removeItem(STORAGE_KEY);
     }
 
+    if (!isFirebaseConfigured) {
+      setIsInitializing(false);
+      return () => {};
+    }
+
     // Listen to Firebase Auth state for real users
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
       if (fbUser) {
@@ -125,6 +131,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const loginWithGoogle = async (): Promise<{ success: boolean; error?: string; cancelled?: boolean }> => {
+    if (!isFirebaseConfigured) {
+      return { success: false, error: "External sign-in is unavailable in the local prototype." };
+    }
+
     try {
       const result = await signInWithPopup(auth, googleProvider);
       if (result.user) {
@@ -192,6 +202,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { success: true, isDemo: true };
     }
 
+    if (!isFirebaseConfigured) {
+      return { success: false, error: "Only the local demo account is available in this prototype." };
+    }
+
     // Mode B: Real User Firebase Authentication
     try {
       const credential = await signInWithEmailAndPassword(auth, email.trim(), pass);
@@ -238,6 +252,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     role?: string;
     organization?: string;
   }): Promise<{ success: boolean; error?: string }> => {
+    if (!isFirebaseConfigured) {
+      return { success: false, error: "Account registration is unavailable until Firebase is configured." };
+    }
+
     try {
       const cred = await createUserWithEmailAndPassword(auth, data.email.trim(), data.password);
       if (cred.user) {
@@ -281,7 +299,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = () => {
-    fbSignOut(auth).catch(() => {});
+    if (isFirebaseConfigured) fbSignOut(auth).catch(() => {});
     setUser(null);
     if (typeof window !== "undefined") {
       try {

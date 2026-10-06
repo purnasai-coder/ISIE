@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   createDemoCollection,
   DemoWorkspaceStorageError,
+  runDemoWrite,
   resetDemoWorkspace,
 } from "../../src/lib/prototype/demoWorkspace.mjs";
 
@@ -90,6 +91,32 @@ test("demo workspace reports browser storage failures rather than presenting fal
   assert.throws(() => collection.reset(), /reset local demo changes/);
 });
 
+test("demo subscriptions deliver storage read errors to the UI error handler", () => {
+  const previousWindow = globalThis.window;
+  const fakeWindow = new EventTarget();
+  globalThis.window = fakeWindow;
+  try {
+    const storage = memoryStorage();
+    const collection = createDemoCollection("demo-subscription", [{ id: "fixture" }], storage);
+    const updates = [];
+    const errors = [];
+    collection.subscribe(
+      (items) => updates.push(items),
+      (error) => errors.push(error)
+    );
+    storage.setItem("demo-subscription", "{broken");
+    fakeWindow.dispatchEvent(new CustomEvent("isie-prototype-demo-change", {
+      detail: { key: "demo-subscription" },
+    }));
+    assert.equal(updates.length, 0);
+    assert.equal(errors.length, 1);
+    assert.ok(errors[0] instanceof DemoWorkspaceStorageError);
+  } finally {
+    if (previousWindow === undefined) delete globalThis.window;
+    else globalThis.window = previousWindow;
+  }
+});
+
 test("demo workspace reports unavailable browser storage rather than silently loading demo values", () => {
   const previousWindow = globalThis.window;
   globalThis.window = new EventTarget();
@@ -100,5 +127,35 @@ test("demo workspace reports unavailable browser storage rather than silently lo
   } finally {
     if (previousWindow === undefined) delete globalThis.window;
     else globalThis.window = previousWindow;
+  }
+});
+
+test("alert, resource, notification, and evidence demo mutations are CRUD-capable but denied outside demo mode", () => {
+  const serviceFixtures = {
+    alerts: [{ id: "alert-fixture", status: "ACKNOWLEDGED" }],
+    resources: [{ id: "resource-fixture", allocated: 0 }],
+    notifications: [{ id: "notification-fixture", read: false }],
+    evidence: [{ id: "evidence-fixture", verification: "UNVERIFIED" }],
+  };
+
+  for (const [service, fixtures] of Object.entries(serviceFixtures)) {
+    const storage = memoryStorage();
+    const collection = createDemoCollection(`isie-prototype-demo-${service}`, fixtures, storage);
+    const localRecord = { id: `${service}-user-note`, state: "USER_PROVIDED_UNVERIFIED" };
+    let writeCalls = 0;
+
+    const denied = runDemoWrite(false, () => {
+      writeCalls += 1;
+      return collection.add(localRecord);
+    }, null);
+    assert.equal(denied, null, `${service} returns its non-demo denial result`);
+    assert.equal(writeCalls, 0, `${service} does not invoke a write outside demo mode`);
+    assert.deepEqual(collection.getAll(), fixtures, `${service} remains unchanged outside demo mode`);
+
+    runDemoWrite(true, () => collection.add(localRecord));
+    assert.equal(collection.update(localRecord.id, (item) => ({ ...item, state: "UPDATED_LOCALLY" })), true);
+    assert.equal(collection.getAll().at(-1).state, "UPDATED_LOCALLY");
+    assert.equal(collection.remove(localRecord.id), true);
+    assert.deepEqual(collection.getAll(), fixtures);
   }
 });

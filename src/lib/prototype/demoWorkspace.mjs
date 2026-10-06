@@ -1,4 +1,5 @@
 const EVENT_NAME = "isie-prototype-demo-change";
+let fallbackIdCounter = 0;
 
 function clone(value) {
   return JSON.parse(JSON.stringify(value));
@@ -96,11 +97,21 @@ export function createDemoCollection(key, fixtures, storage = getBrowserStorage(
       notify();
       return clone(initial);
     },
-    subscribe(callback) {
+    subscribe(callback, onError) {
       if (typeof window === "undefined") return () => {};
       const listener = (event) => {
         if (event.detail?.key === key || event.detail?.key === "*" || event.key === key) {
-          callback(read());
+          let items;
+          try {
+            items = read();
+          } catch (error) {
+            if (onError) {
+              onError(error);
+              return;
+            }
+            throw error;
+          }
+          callback(items);
         }
       };
       window.addEventListener(EVENT_NAME, listener);
@@ -133,6 +144,18 @@ export function resetDemoWorkspace(storage = getBrowserStorage()) {
   if (typeof window !== "undefined") {
     window.dispatchEvent(new CustomEvent(EVENT_NAME, { detail: { key: "*" } }));
   }
+}
+
+export function createDemoId(prefix) {
+  const randomUUID = globalThis.crypto?.randomUUID;
+  if (typeof randomUUID === "function") return `${prefix}-${randomUUID()}`;
+  fallbackIdCounter += 1;
+  return `${prefix}-${Date.now()}-${fallbackIdCounter}`;
+}
+
+export function runDemoWrite(isDemoMode, write, deniedResult = false) {
+  if (!isDemoMode) return deniedResult;
+  return write();
 }
 
 function getBrowserStorage() {

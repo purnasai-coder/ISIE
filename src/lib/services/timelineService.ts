@@ -38,7 +38,7 @@ export class TimelineService implements ITimelineService {
         .map((d) => ({ id: d.id, ...(d.data() as Omit<TimelineEvent, "id">) }));
     } catch (err) {
       handleFirestoreError(err, OperationType.LIST, "timelines");
-      return [];
+      throw err;
     }
   }
 }

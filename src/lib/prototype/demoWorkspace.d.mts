@@ -5,7 +5,10 @@ export interface DemoCollection<T extends { id: string }> {
   update(id: string, updater: (item: T) => T): boolean;
   remove(id: string): boolean;
   reset(): T[];
-  subscribe(callback: (items: T[]) => void): () => void;
+  subscribe(
+    callback: (items: T[]) => void,
+    onError?: (error: unknown) => void
+  ): () => void;
 }
 
 export class DemoWorkspaceStorageError extends Error {}
@@ -17,3 +20,9 @@ export function createDemoCollection<T extends { id: string }>(
 ): DemoCollection<T>;
 
 export function resetDemoWorkspace(storage?: Storage | null): void;
+export function createDemoId(prefix: string): string;
+export function runDemoWrite<T, D = false>(
+  isDemoMode: boolean,
+  write: () => T,
+  deniedResult?: D
+): T | D;

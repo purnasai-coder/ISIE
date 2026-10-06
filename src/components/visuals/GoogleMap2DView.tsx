@@ -43,7 +43,6 @@ import {
   CRITICAL_EVACUATION_CORRIDORS,
   ROAD_CUTOFF_CHOKEPOINTS,
   AUTHORITATIVE_HAZARD_ZONES,
-  CENTRAL_COMMAND_HQ,
 } from "@/lib/constants/indiaGeographicData";
 import { BasemapQuickToggle, BasemapMode } from "./BasemapQuickToggle";
 
@@ -526,25 +525,7 @@ export const GoogleMap2DView: React.FC<GoogleMap2DViewProps> = ({
       });
     }
 
-    // 9. Central Command HQ (New Delhi)
-    if (CENTRAL_COMMAND_HQ) {
-      const hqMarker = new google.maps.Marker({
-        position: { lat: CENTRAL_COMMAND_HQ.coords[0], lng: CENTRAL_COMMAND_HQ.coords[1] },
-        map,
-        title: `${CENTRAL_COMMAND_HQ.name} - ${CENTRAL_COMMAND_HQ.status}`,
-        icon: {
-          path: google.maps.SymbolPath.CIRCLE,
-          scale: 6,
-          fillColor: "#38bdf8",
-          fillOpacity: 1,
-          strokeColor: "#ffffff",
-          strokeWeight: 2,
-        },
-      });
-      markersRef.current.push(hqMarker);
-    }
-
-    // 10. Render Incident Markers & Dynamic Hazard Buffers
+    // Incident markers are user-provided or simulated records; no hazard buffers are inferred.
     if (layerVisibility.incidents) {
       activeIncidents.forEach((inc) => {
         const isSelected = selectedIncidentId === inc.id;

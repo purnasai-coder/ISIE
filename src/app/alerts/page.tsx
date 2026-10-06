@@ -18,9 +18,23 @@ export default function AlertCenterPage() {
   const [selectedAlert, setSelectedAlert] = useState<Alert | null>(null);
   const [mutationNotice, setMutationNotice] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [showCreate, setShowCreate] = useState(false);
+  const [draftTitle, setDraftTitle] = useState("");
+  const [draftLocation, setDraftLocation] = useState("");
 
   useEffect(() => {
     setLoadError(null);
+    if (isDemoMode) {
+      return alertService.subscribeDemoAlerts((data) => {
+        setLoadError(null);
+        setAlerts(data);
+        setSelectedAlert((selected) => data.find((item) => item.id === selected?.id && item.status !== "DISMISSED") || data.find((item) => item.status !== "DISMISSED") || null);
+      }, (error) => {
+        setAlerts([]);
+        setSelectedAlert(null);
+        setLoadError(error instanceof Error ? error.message : "Local demo alerts could not be loaded.");
+      });
+    }
     alertService.getActiveAlerts(isDemoMode)
       .then((data) => {
         setAlerts(data);
@@ -33,35 +47,55 @@ export default function AlertCenterPage() {
       });
   }, [isDemoMode]);
 
-  const handleAcknowledge = async (id: string) => {
-    const success = await alertService.acknowledgeAlert(id, isDemoMode);
-    if (!success) {
-      setMutationNotice("Alert updates are disabled until the audited backend is configured.");
-      return;
+  const handleCreateDemoAlert = async (event: React.FormEvent) => {
+    event.preventDefault();
+    try {
+      const created = await alertService.createDemoAlert(
+        { title: draftTitle, location: draftLocation },
+        isDemoMode
+      );
+      if (!created) throw new Error("Simulated alert notes can only be created in demo mode.");
+      setDraftTitle("");
+      setDraftLocation("");
+      setShowCreate(false);
+      setMutationNotice("Saved only to this browser as a simulated tabletop note. No broadcast or dispatch occurred.");
+    } catch (error) {
+      setMutationNotice(error instanceof Error ? error.message : "Unable to save local demo note.");
     }
-    setAlerts((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, status: "ACKNOWLEDGED" as const } : a))
-    );
+  };
+
+  const handleAcknowledge = async (id: string) => {
+    try {
+      const success = await alertService.acknowledgeAlert(id, isDemoMode);
+      if (!success) {
+        setMutationNotice("Alert updates are disabled until the audited backend is configured.");
+        return;
+      }
+      setMutationNotice(isDemoMode ? "Acknowledgement saved in the local simulation only." : "Acknowledgement saved.");
+    } catch (error) {
+      setMutationNotice(error instanceof Error ? error.message : "Unable to save the alert update.");
+    }
   };
 
   const handleDismiss = async (id: string) => {
-    const success = await alertService.dismissAlert(id, isDemoMode);
-    if (!success) {
-      setMutationNotice("Alert updates are disabled until the audited backend is configured.");
-      return;
-    }
-    setAlerts((prev) => prev.filter((a) => a.id !== id));
-    if (selectedAlert?.id === id) {
-      setSelectedAlert(alerts.find((a) => a.id !== id) || null);
+    try {
+      const success = await alertService.dismissAlert(id, isDemoMode);
+      if (!success) {
+        setMutationNotice("Alert updates are disabled until the audited backend is configured.");
+        return;
+      }
+      setMutationNotice(isDemoMode ? "Dismissed from this browser's simulated exercise log only." : "Dismissed.");
+    } catch (error) {
+      setMutationNotice(error instanceof Error ? error.message : "Unable to save the alert update.");
     }
   };
 
   const filteredAlerts = alerts.filter(
-    (a) => filterSeverity === "ALL" || a.severity === filterSeverity
+    (a) => a.status !== "DISMISSED" && (filterSeverity === "ALL" || a.severity === filterSeverity)
   );
 
   return (
-    <AppShell pageTitle="Alert Center // Tactical Warning & Multi-Agency Dispatch">
+    <AppShell pageTitle="Alert Center // Simulated Tabletop Records (No Dispatch)">
       <div className="flex-1 flex flex-col p-4 md:p-6 gap-6 max-w-7xl mx-auto w-full select-none">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-white/10">
@@ -69,25 +103,38 @@ export default function AlertCenterPage() {
             <div className="flex items-center gap-2 mb-1">
               <BellRing className="w-5 h-5 text-amber-400" />
               <h1 className="font-mono text-xl font-bold uppercase tracking-wider text-white">
-                Strategic Alert & Early Warning Center
+                Simulated Alert Notes & Exercise Log
               </h1>
             </div>
             <p className="text-xs text-isie-text-secondary">
-              No operational alert generation or dispatch is configured. Records appear only when fresh, verified-source checks pass.
+              This is a local tabletop log only. No alerts are broadcast, no dispatch occurs, and no live provider is connected.
             </p>
           </div>
 
           <div className="flex items-center gap-2">
-            <TacticalBadge variant="critical" size="sm" pulse>
-              {alerts.filter((a) => a.severity === "CRITICAL").length} CRITICAL ALARMS
+            <TacticalBadge variant="muted" size="sm">
+              {alerts.filter((a) => a.status !== "DISMISSED").length} LOCAL SIMULATED NOTES
             </TacticalBadge>
+            {isDemoMode && (
+              <TacticalButton variant="secondary" size="sm" onClick={() => setShowCreate((open) => !open)}>
+                {showCreate ? "CANCEL NOTE" : "ADD TABLETOP NOTE"}
+              </TacticalButton>
+            )}
           </div>
         </div>
+
+        {showCreate && isDemoMode && (
+          <form onSubmit={handleCreateDemoAlert} className="grid grid-cols-1 md:grid-cols-3 gap-3 p-4 bg-isie-panel border border-amber-500/30 rounded-sm font-mono text-xs">
+            <input required minLength={3} value={draftTitle} onChange={(event) => setDraftTitle(event.target.value)} placeholder="Exercise note title" className="bg-black/20 border border-white/10 rounded px-2 py-2 text-white" />
+            <input required minLength={2} value={draftLocation} onChange={(event) => setDraftLocation(event.target.value)} placeholder="User-provided exercise location" className="bg-black/20 border border-white/10 rounded px-2 py-2 text-white" />
+            <TacticalButton variant="primary" size="sm" type="submit">SAVE LOCAL SIMULATION NOTE</TacticalButton>
+          </form>
+        )}
 
         {/* Severity Filters & Action Bar */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-1.5 font-mono text-xs">
-            {["ALL", "CRITICAL", "HIGH", "MEDIUM", "LOW"].map((sev) => (
+            {["ALL", "LOW"].map((sev) => (
               <button
                 key={sev}
                 onClick={() => setFilterSeverity(sev)}
@@ -145,10 +192,10 @@ export default function AlertCenterPage() {
                 title="No Active Alerts"
                 description={
                   isDemoMode
-                    ? "No alerts match the selected severity filter."
-                    : "No operational alerts have been dispatched in your sector."
+                    ? "No simulated notes match the selected filter."
+                    : "No verified operational alert feed is connected."
                 }
-                statusText="CLEAR AIRWAVES"
+                statusText={isDemoMode ? "NO MATCHING LOCAL NOTES" : "NO LIVE FEED"}
               />
             ) : (
               filteredAlerts.map((alert) => {
@@ -173,17 +220,15 @@ export default function AlertCenterPage() {
                             ? "critical"
                             : alert.severity === "HIGH"
                             ? "orange"
-                            : alert.severity === "MEDIUM"
-                            ? "warning"
                             : "muted"
                         }
                         size="sm"
-                        pulse={alert.severity === "CRITICAL"}
+                        pulse={false}
                       >
                         {alert.severity}
                       </TacticalBadge>
                       <TacticalBadge variant="muted" size="sm">
-                        {alert.status}
+                        SIMULATED // {alert.status}
                       </TacticalBadge>
                     </div>
                     <span className="font-mono text-[10px] text-isie-text-dim">
@@ -216,7 +261,7 @@ export default function AlertCenterPage() {
                           ? "critical"
                           : selectedAlert.severity === "HIGH"
                           ? "orange"
-                          : "warning"
+                          : "muted"
                       }
                       size="md"
                     >
@@ -235,7 +280,7 @@ export default function AlertCenterPage() {
 
                 <div className="p-4 bg-white/[0.02] border border-white/10 rounded-xs space-y-2">
                   <div className="text-amber-300 font-bold uppercase tracking-wider">
-                    Recommended Response Protocol
+                    TABLETOP DISCUSSION ONLY // NOT AN OPERATIONAL RECOMMENDATION
                   </div>
                   <p className="text-isie-text-primary leading-relaxed">
                     {selectedAlert.recommendedAction}
@@ -244,13 +289,13 @@ export default function AlertCenterPage() {
 
                 <div className="grid grid-cols-2 gap-3 text-isie-text-dim">
                   <div className="p-3 bg-white/[0.02] border border-white/5 rounded-xs">
-                    <div>SOURCE VERIFICATION</div>
+                    <div>SOURCE / PROVENANCE</div>
                     <div className="text-white font-bold mt-1">{selectedAlert.sourceAgency}</div>
                   </div>
                   <div className="p-3 bg-white/[0.02] border border-white/5 rounded-xs">
-                    <div>CONFIDENCE SCORE</div>
+                    <div>CONFIDENCE</div>
                     <div className="text-emerald-400 font-bold mt-1">
-                      {(selectedAlert.confidenceScore * 100).toFixed(0)}%
+                      {selectedAlert.confidenceScore > 0 ? `${(selectedAlert.confidenceScore * 100).toFixed(0)}% (UNVERIFIED FIXTURE)` : "NOT ASSESSED"}
                     </div>
                   </div>
                 </div>
@@ -294,7 +339,7 @@ export default function AlertCenterPage() {
                   </div>
                   <Link href="/resources">
                     <TacticalButton variant="secondary" size="sm">
-                      DISPATCH ASSETS
+                      VIEW EXERCISE RESOURCES
                     </TacticalButton>
                   </Link>
                 </>

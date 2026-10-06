@@ -10,7 +10,7 @@ import { DEMO_INCIDENTS } from "@/data/demo/incidents";
 import { AuthUser } from "@/lib/auth/AuthContext";
 import { hasPermission } from "@/lib/auth/roles";
 import { hasFreshVerifiedProvenance } from "@/lib/utils/dataQuality";
-import { createDemoCollection } from "@/lib/prototype/demoWorkspace.mjs";
+import { createDemoCollection, createDemoId } from "@/lib/prototype/demoWorkspace.mjs";
 
 const demoIncidents = createDemoCollection("isie-prototype-demo-incidents", DEMO_INCIDENTS);
 
@@ -89,8 +89,20 @@ export class IncidentService {
       : typeof arg2 === "boolean" ? arg2 : false;
 
     if (isDemoMode) {
-      callback(demoIncidents.getAll());
-      return demoIncidents.subscribe(callback);
+      try {
+        callback(demoIncidents.getAll());
+      } catch (error) {
+        const normalized = error instanceof Error ? error : new Error(String(error));
+        if (onError) {
+          onError(normalized);
+          return () => {};
+        }
+        throw normalized;
+      }
+      const handleStorageError = onError
+        ? (error: unknown) => onError(error instanceof Error ? error : new Error(String(error)))
+        : undefined;
+      return demoIncidents.subscribe(callback, handleStorageError);
     }
     if (!auth.currentUser) {
       callback([]);
@@ -142,7 +154,7 @@ export class IncidentService {
       ) {
         return { success: false, error: "Coordinates must be valid latitude and longitude values." };
       }
-      const id = `DEMO-USER-${Date.now()}`;
+      const id = createDemoId("DEMO-USER-CASE");
       const timestamp = new Date().toISOString();
       demoIncidents.add({
         id,

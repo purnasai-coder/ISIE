@@ -8,21 +8,23 @@ import { DEMO_ALERTS } from "@/data/demo/alerts";
 import { collection, getDocs, query } from "firebase/firestore";
 import { db, auth, handleFirestoreError, OperationType } from "@/lib/firebase/client";
 import { hasFreshVerifiedProvenance } from "@/lib/utils/dataQuality";
+import { createDemoCollection, createDemoId, runDemoWrite } from "@/lib/prototype/demoWorkspace.mjs";
+
+const demoAlerts = createDemoCollection("isie-prototype-demo-alerts", DEMO_ALERTS);
 
 export interface IAlertService {
   getActiveAlerts(scopeOrDemo?: string | boolean, isDemoMode?: boolean): Promise<Alert[]>;
+  createDemoAlert(input: { title: string; location: string }, isDemoMode: boolean): Promise<Alert | null>;
   acknowledgeAlert(alertId: string, isDemoMode?: boolean): Promise<boolean>;
   dismissAlert(alertId: string, isDemoMode?: boolean): Promise<boolean>;
   muteAlert(alertId: string, isDemoMode?: boolean): Promise<boolean>;
 }
 
 export class AlertService implements IAlertService {
-  private demoAlerts: Alert[] = [...DEMO_ALERTS];
-
   async getActiveAlerts(scopeOrDemo?: string | boolean, isDemoMode?: boolean): Promise<Alert[]> {
     const isDemo = typeof scopeOrDemo === "boolean" ? scopeOrDemo : (isDemoMode ?? false);
     if (isDemo) {
-      return [...this.demoAlerts];
+      return demoAlerts.getAll();
     }
     if (!auth.currentUser) return [];
 
@@ -51,41 +53,58 @@ export class AlertService implements IAlertService {
     }
   }
 
-  async acknowledgeAlert(alertId: string, isDemoMode: boolean = false): Promise<boolean> {
-    if (isDemoMode) {
-      this.demoAlerts = this.demoAlerts.map((a) =>
-        a.id === alertId ? { ...a, status: "ACKNOWLEDGED" as const } : a
-      );
-      return true;
-    }
-    if (!auth.currentUser) return false;
+  async createDemoAlert(
+    input: { title: string; location: string },
+    isDemoMode: boolean
+  ): Promise<Alert | null> {
+    return runDemoWrite(isDemoMode, () => {
+      const title = input.title.trim();
+      const location = input.location.trim();
+      if (title.length < 3 || location.length < 2) {
+        throw new Error("Enter a short exercise note title and a user-provided exercise location.");
+      }
+      const id = createDemoId("DEMO-USER-ALERT");
+      const alert: Alert = {
+        id,
+        alertCode: id,
+        title: `SIMULATED EXERCISE NOTE: ${title}`,
+        severity: "LOW",
+        alertType: "SYSTEM_DIAGNOSTIC",
+        location,
+        timestamp: new Date().toISOString(),
+        sourceAgency: "USER-PROVIDED (UNVERIFIED)",
+        confidenceScore: 0,
+        status: "ACKNOWLEDGED",
+        recommendedAction: "Tabletop discussion only. No real-world action, broadcast, or dispatch is authorized.",
+      };
+      demoAlerts.add(alert);
+      return alert;
+    }, null);
+  }
 
-    void alertId;
-    return false;
+  subscribeDemoAlerts(callback: (items: Alert[]) => void, onError?: (error: unknown) => void): () => void {
+    let items: Alert[];
+    try {
+      items = demoAlerts.getAll();
+    } catch (error) {
+      if (!onError) throw error;
+      onError(error);
+      return () => {};
+    }
+    callback(items);
+    return demoAlerts.subscribe(callback, onError);
+  }
+
+  async acknowledgeAlert(alertId: string, isDemoMode: boolean = false): Promise<boolean> {
+    return runDemoWrite(isDemoMode, () => demoAlerts.update(alertId, (a) => ({ ...a, status: "ACKNOWLEDGED" as const })));
   }
 
   async dismissAlert(alertId: string, isDemoMode: boolean = false): Promise<boolean> {
-    if (isDemoMode) {
-      this.demoAlerts = this.demoAlerts.filter((a) => a.id !== alertId);
-      return true;
-    }
-    if (!auth.currentUser) return false;
-
-    void alertId;
-    return false;
+    return runDemoWrite(isDemoMode, () => demoAlerts.update(alertId, (a) => ({ ...a, status: "DISMISSED" as const })));
   }
 
   async muteAlert(alertId: string, isDemoMode: boolean = false): Promise<boolean> {
-    if (isDemoMode) {
-      this.demoAlerts = this.demoAlerts.map((a) =>
-        a.id === alertId ? { ...a, status: "MUTED" as const } : a
-      );
-      return true;
-    }
-    if (!auth.currentUser) return false;
-
-    void alertId;
-    return false;
+    return runDemoWrite(isDemoMode, () => demoAlerts.update(alertId, (a) => ({ ...a, status: "MUTED" as const })));
   }
 }
 

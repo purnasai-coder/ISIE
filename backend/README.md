@@ -2,6 +2,8 @@
 
 This Python backend is a foundation for integration, not an emergency-response service. It does not issue alerts or dispatch instructions, and it must not be used to make or execute disaster-response decisions. `/health` always reports `productionReady: false`. No weather, satellite, hydrology, population, road, shelter, or hazard provider is bundled or called.
 
+The frontend's demo interactions use only browser-local `isie-prototype-demo-*` storage and are not sent to this backend. Frontend scenario arithmetic is a separate, unvalidated toy simulation; risk, capacity, relocation, and analytics remain unavailable/not assessed where verified measurements are absent. Neither the Python API nor the UI is an operational decision-support path.
+
 ## Local setup
 
 Requires Python 3.10 or newer. The Firebase Admin SDK is needed only when configuring ID-token verification:
